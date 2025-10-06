@@ -36,7 +36,7 @@ public class User {
 
     public void addAddress(Address address) {
         addresses.add(address);
-        address.setUser(this);
+        address .setUser(this);
     }
 
     public void removeAddress(Address address) {
