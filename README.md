@@ -80,7 +80,7 @@ A **REST API** (or RESTful API) is an API that follows REST principles, typicall
 
 > 🌐 Example REST endpoint:  
 > `GET /api/users/5` → returns JSON: `{ "id": 5, "name": "Alice" }`
-
+> the users named end point is a resource
 ---
 
 ## 1.3.2 🔹 What is a **"Normal" API with `@Controller`**?
@@ -137,5 +137,73 @@ public class UserApiController {
 > - **REST API** = Data-only API using HTTP methods, returns JSON/XML.
 > - **`@RestController`** = Spring annotation to build REST APIs easily.
 > - **`@Controller`** = For server-rendered web pages (HTML), not APIs.
+
+---
+!!! Note :
+```java
+public List<User> getAllUsers() {
+return userRepository.findAll();
+}
+```
+the return type for method is Iterable and this is interface parent of List
+so every list is Iterable but not every Iterable is List
+so we use here Iterable instead of List
+
+### 1.3.3 Postman :
+
+### 🔹 What is **Postman**?
+
+🌐 Browser = Good for quick GET checks.
+🛠️ Postman = Essential for real API development (POST, PUT, auth, testing, teamwork).
+
+**Postman** is a free tool (desktop + web) to **test, build, and document APIs** — especially **REST APIs**.
+
+Think of it as a **"remote control" for your backend**.  
+Instead of using a browser or writing code, you send HTTP requests (GET, POST, etc.) and see the response instantly.
+
+---
+
+### 🔹 Why Do You Need It?
+
+✅ **Test your API** without a frontend  
+✅ **Debug endpoints** fast (see status code, headers, JSON response)  
+✅ **Send data** (like JSON in POST requests) easily  
+✅ **Save & organize** your requests (great for teams)  
+✅ **Automate tests** (e.g., check if login returns 200 OK)  
+✅ **Document your API** automatically
+
+> 🎯 Example:  
+> You built a `/api/users` endpoint in Spring Boot?  
+> Use Postman to **POST** a new user with JSON → see if it works in 10 seconds!
+
+---
+
+### 🔹 Basic Use Case
+
+1. Open Postman
+2. Choose method: `POST`
+3. Enter URL: `http://localhost:8080/api/users`
+4. Go to **Body → raw → JSON**
+5. Paste:
+   ```json
+   { "name": "Ali", "email": "ali@example.com" }
+   ```
+6. Hit **Send** → See response (201 Created? Error? Data?)
+
+---
+
+### 🔹 Who Uses It?
+
+- Backend devs (to test their own APIs)
+- Frontend devs (to check how the API works before coding)
+- QA testers (to automate API tests)
+- DevOps (to monitor API health)
+
+---
+
+### ✅ Bottom Line
+
+> **Postman = Your API playground.**  
+> No coding needed. Just send requests & see what your server says.
 
 ---
