@@ -42,7 +42,7 @@ and after add namespace in html file
 and after you can  use the **thymeleaf** attributes 
 for example : 
 ```html
-<h1 th:text="'Hello ' + ${name} + '!'">Hello World!</h1>
+<h1 th:text="'hello'+${name} "></h1>
 ``` 
 so you should go to your controller and add name attribute to your model
 ```java
