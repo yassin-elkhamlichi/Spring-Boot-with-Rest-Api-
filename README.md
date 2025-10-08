@@ -470,3 +470,51 @@ now we can use this interface in our controller
        return ResponseEntity.ok(userMapper.toDto(user));
     }
 ```
+---
+ java object  --> json named **serialization**
+ json --> java object named **deserialization**
+ **Customizing Response** :
+ we have many annotation for controll json like :
+ @JsonIgnoreProperties(ignoreUnknown = true)
+ @JsonInclude(JsonInclude.Include.NON_NULL)
+ @JsonProperty("name")
+ @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") 
+ for example here :
+```jav
+public class UserDto {
+ private Long id;
+ private String name;
+ private String email;
+ }
+``` 
+we cant remove id field from json because we need it for update user
+but we can ignore it using @JsonIgnore
+```java
+public class UserDto {
+    @JsonIgnore
+    private Long id;
+}
+```
+we also have jsonproperty annotation for change name of field in json
+```java
+public class UserDto {
+@JsonProperty("full_name")
+    private String name;
+}
+```
+also we can use @JsonInnclude annotation for ignore null fields
+```java
+   public class UserDto {
+    @JsonProperty("full_name")
+    private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String email;
+} 
+```
+also we have @JsonFormat annotation for change date format
+```java
+public class UserDto {
+@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+private Date createdAt;
+}
+```
