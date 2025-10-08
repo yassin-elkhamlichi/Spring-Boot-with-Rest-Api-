@@ -410,6 +410,15 @@ public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
                 .map(user -> new UserDto(user.getId(), user.getName(), user.getEmail()))
                 .toList();
     }
+@GetMapping("/{id}")
+public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+    var user =  userRepository.findById(id).orElse(null);
+    if (user == null){
+        return ResponseEntity.notFound().build();
+    }
+    var userDto = new UserDto(user.getId(), user.getName(), user.getEmail());
+    return ResponseEntity.ok(userDto);
+}
 ```
 this method:
 Fetches all users from DB → List<User>
@@ -417,3 +426,47 @@ Turns it into a stream → Stream<User>
 Converts each User to a safe UserDto → Stream<UserDto>
 Collects results into a list → List<UserDto>
 Returns it as Iterable<UserDto> (valid for Spring REST)
+
+---
+this method use the manually mapping
+so we need to use auto mapping
+so we choose library for mapping **mapstruct**
+first we need add depandency for this library 
+```xml
+ <dependency>
+    <groupId>org.mapstruct</groupId>
+    <artifactId>mapstruct</artifactId>
+    <version>1.6.2</version>
+</dependency>
+<dependency>
+<groupId>org.mapstruct</groupId>
+<artifactId>mapstruct-processor</artifactId>
+<version>1.6.3</version>
+</dependency>
+```
+and after  we need to create interface for mapping
+```java
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    UserDto toDto(User user);
+}
+```
+spring automatically create implementation for this interface
+now we can use this interface in our controller
+```java
+   @GetMapping
+    public Iterable<UserDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+        var user =  userRepository.findById(id).orElse(null);
+        if (user == null){
+            return ResponseEntity.notFound().build();
+        }
+       return ResponseEntity.ok(userMapper.toDto(user));
+    }
+```
