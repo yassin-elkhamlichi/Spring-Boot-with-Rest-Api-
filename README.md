@@ -207,3 +207,41 @@ Instead of using a browser or writing code, you send HTTP requests (GET, POST, e
 > No coding needed. Just send requests & see what your server says.
 
 ---
+
+```java
+@AllArgsConstructor
+@RestController
+public class UserController {
+    private final UserRepository userRepository;
+
+    @GetMapping("/users")
+    public Iterable<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+    @GetMapping("/{id}")
+    public Optional<User> getUser(@PathVariable Long id) {
+        return userRepository.findById(id);
+    }
+
+}
+```
+we call users many tames so we try to remove users word and add it in the @RequestMapping
+```java
+@AllArgsConstructor
+@RestController
+@RequestMapping("/users")
+public class UserController {
+  private final UserRepository userRepository;
+
+    @GetMapping
+    public Iterable<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+     @GetMapping("/{id}")
+    public Optional<User> getUser(@PathVariable Long id) {
+        return userRepository.findById(id);
+    }
+
+}
+```
+> @PathVariable is a Spring Framework annotation used in controller methods to extract values from the URI (URL) path.
