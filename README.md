@@ -245,3 +245,19 @@ public class UserController {
 }
 ```
 > @PathVariable is a Spring Framework annotation used in controller methods to extract values from the URI (URL) path.
+
+in this way when i enter for example id not exist in DB 
+the restfull return 200 ok with null
+so we need to hundle this and when user is null return 404 not found
+for do this we need to change type return in  the method
+to ResponseEntity<T>
+```java
+GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        var user =  userRepository.findById(id).orElse(null);
+        if (user == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+```
