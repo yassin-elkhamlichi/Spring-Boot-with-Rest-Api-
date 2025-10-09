@@ -518,3 +518,28 @@ public class UserDto {
 private Date createdAt;
 }
 ```
+
+---
+### Extracting Query Parameters :
+```java
+ @GetMapping
+    public Iterable<UserDto> getAllUsers(
+            @RequestParam(required = false,  defaultValue = "" , name = "sort") String sortBy) {
+        if(!Set.of("email","name").contains(sortBy))
+            sortBy = "name";
+        return userRepository.findAll(Sort.by(sortBy))
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
+```
+this method use query parameter to sort users by email or name
+-> the parametre required is tell teh url is sort is required or not
+so you can use this url :
+http://localhost:8080/users?sort=email
+or just
+http://localhost:8080/users
+-> the parametre default value is tell the default value of sort parameter
+-> the parametre name is tell the name of sort parameter
+if you change sortBy to another word the url still work becouse you declared name = "sort"
