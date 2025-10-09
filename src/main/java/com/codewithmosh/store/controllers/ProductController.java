@@ -2,15 +2,14 @@ package com.codewithmosh.store.controllers;
 
 import com.codewithmosh.store.dtos.ProductDto;
 import com.codewithmosh.store.entities.Product;
-import com.codewithmosh.store.mappers.CategoryMapper;
 import com.codewithmosh.store.mappers.ProductMapper;
 import com.codewithmosh.store.repositories.ProductRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -19,8 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-
-    @RequestMapping("/{id}")
+    @GetMapping
+    public List<ProductDto> getAllProducts(@RequestParam(required = false) Byte categoryId) {
+        List<Product> products;
+        if(categoryId != null) {
+            products = productRepository.findByCategory_id(categoryId);
+        }else {
+            products = productRepository.findAll();
+        }
+        return products.stream().map(productMapper::toDto).toList();
+    }
+    @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
         var product = productRepository.findById(id).orElse(null);
         if(product == null){
