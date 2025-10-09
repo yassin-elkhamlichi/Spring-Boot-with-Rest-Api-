@@ -543,3 +543,74 @@ http://localhost:8080/users
 -> the parametre default value is tell the default value of sort parameter
 -> the parametre name is tell the name of sort parameter
 if you change sortBy to another word the url still work becouse you declared name = "sort"
+
+---
+### what i learn in exercice :
+```java
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    @EntityGraph(attributePaths = {"category"})
+    public List<Product> findByCategory_id(Byte categoryId);
+}
+
+###########
+@Mapper(componentModel = "spring")
+public interface ProductMapper {
+    @Mapping(target = "categoryId" , source = "category.id" )
+    public ProductDto toDto(Product product);
+}
+```
+when you have rolation manytoone you can use @Mapping(target = "categoryId" , source = "category.id" )
+this dont get category object , but get the id from gategory
+and in Dto you should write this :
+```java
+@AllArgsConstructor
+@Getter
+@Data
+public class ProductDto {
+    private Long id;
+    private String name;
+    private String description;
+    private BigDecimal price;
+    private Byte categoryId;
+}
+```
+---
+
+### Extracting Request Headers :
+```java
+public List<ProductDto> getAllProducts(
+@RequestHeader(required = false , name("X-API-KEY") String apiKey )
+@RequestParam(required = false) Byte categoryId) {
+}
+```
+this annotation is about req Header help us to extract request header and use it in our method
+### Extracting Request body :
+you can in the postman use body to test create ressources like user 
+but not create ressource in bd 
+if you want to create ressource in bd you need to use post method
+```java
+ @PostMapping
+    public UserDto createUser(@RequestBody RegisterUserRequest data) {
+        var user = userMapper.toEntity(data);
+        userRepository.save(user);
+        var userDto = userMapper.toDto(user);
+        return userDto;
+    }
+```
+why we add RegisterUserRequest not userDTO ? becouse in dto we dont have 
+password field so we need add new class in the DTO specific for create user
+```java
+@Data
+public class RegisterUserRequest {
+    private String name;
+    private String email;
+    private String password;
+}
+```
+an dyou should add new mthod in mapper :
+```java
+User toEntity(RegisterUserRequest registerUserRequest);
+```
+this get registerUserRequest and return user 
+and after we call the toDto method for get userDTO
+and after we fetch it in the postman
