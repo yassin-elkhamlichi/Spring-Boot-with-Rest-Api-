@@ -652,3 +652,60 @@ method for you
 ✅ Return type
 ✅ Annotations like @MappingTarget
 dont forget create UpdateUserDto for choose wish field you want to update
+-> if you want delete user you should add this method in controller :
+```java
+@DeleteMapping("/{id}")
+public ResponseEntity deleteUser(
+@PathVariable(name = "id") Long id
+){
+var user = userRepository.findById(id).orElse(null);
+if(user == null){
+return ResponseEntity.notFound().build();
+}
+userRepository.delete(user);
+return ResponseEntity.noContent().build();
+}
+```
+---
+🔹 What is ResponseEntity?
+ResponseEntity<T> is a generic class in Spring that represents the entire HTTP response — not just the body, but also:
+
+✅ Status code (e.g., 200 OK, 404 Not Found, 500 Internal Server Error)
+✅ Headers (e.g., Content-Type, Location, custom headers)
+✅ Response body (your actual data, like JSON, XML, etc.)
+It gives you full control over what your REST endpoint returns.
+---
+### Action_based updates :
+we use Put and Patch for update resources but 
+some updates represent an "action"
+like changing password , submit approval request 
+so better use a Post request for this case
+we try to update password so we go to controller and write this :
+```java
+@PostMapping("/{id}/Change_password")
+    public ResponseEntity changePassword(
+            @PathVariable(name = "id") Long id,
+            @RequestBody ChangePasswordReqeust data
+    ){
+        var user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            return ResponseEntity.notFound().build();
+        }
+        if(!user.getPassword().equals(data.getOldPassword())){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            // help us to know what is the error here when i use Unautauthorized
+            //that mean that the old password is not correct
+        }
+        user.setPassword(data.getNewPassword());
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+```
+and create new class in dto 
+```java
+@Data
+public class ChangePasswordReqeust {
+    private String oldPassword;
+    private String newPassword;
+}
+```
