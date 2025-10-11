@@ -607,10 +607,48 @@ public class RegisterUserRequest {
     private String password;
 }
 ```
-an dyou should add new mthod in mapper :
+and you should add new method in mapper :
 ```java
 User toEntity(RegisterUserRequest registerUserRequest);
 ```
 this get registerUserRequest and return user 
+and save user in the bd
 and after we call the toDto method for get userDTO
 and after we fetch it in the postman
+-> now we try to update User in bd based postman
+first in postman you should choose 
+Put or patch as request method
+and after you should add methode in the controller like this 
+```java
+ @PutMapping("/{id}")
+    public  ResponseEntity updateUser(
+        @PathVariable(name = "id") Long id, 
+        @RequestBody UpdateUserDto data // this  is the data from postman in the request body
+    ){
+        var user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            return ResponseEntity.notFound().build(); // return 404 in postman if user dosn't exist
+        }
+        userMapper.update(data,user); // update user with data from postman
+        userRepository.save(user);
+        return ResponseEntity.ok(userMapper.toDto(user));
+
+    }
+```
+and after you should add new method in mapper like this :
+```java
+void update(UpdateUserDto updateUserDto,@MappingTarget User user);
+```
+
+so this method update user with data from postman mapstruct generate automaticlly this 
+method for you
+
+🧠 How MapStruct “knows” what to do
+1. Method Name Matters — But Not Alone
+   MapStruct doesn’t just look at the name — it looks at:
+
+✅ Method name (e.g., update, toDto)
+✅ Parameter types
+✅ Return type
+✅ Annotations like @MappingTarget
+dont forget create UpdateUserDto for choose wish field you want to update

@@ -1,21 +1,17 @@
 package com.codewithmosh.store.controllers;
 
 import com.codewithmosh.store.dtos.RegisterUserRequest;
+import com.codewithmosh.store.dtos.UpdateUserDto;
 import com.codewithmosh.store.dtos.UserDto;
 import com.codewithmosh.store.entities.User;
 import com.codewithmosh.store.mappers.UserMapper;
 import com.codewithmosh.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
 
 @AllArgsConstructor
 @RestController
@@ -48,5 +44,32 @@ public class UserController {
         var userDto = userMapper.toDto(user);
         return userDto;
     }
+    @PutMapping("/{id}")
+    public  ResponseEntity<UserDto> updateUser(
+        @PathVariable(name = "id") Long id,
+        @RequestBody UpdateUserDto data
+    ){
+        var user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            return ResponseEntity.notFound().build();
+        }
+        userMapper.update(data,user);
+        userRepository.save(user);
+        return ResponseEntity.ok(userMapper.toDto(user));
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserDto> deleteUser(
+            @PathVariable(name = "id") Long id
+    ){
+        var user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.delete(user);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
