@@ -62,6 +62,7 @@ public class ProductController {
         productMapper.update(data,product);
         var category = categoryRepository.findById(data.getCategoryId()).orElse(null);
         product.setCategory(category);
+        product.setId(id);
         productRepository.save(product);
         return  ResponseEntity.ok(productMapper.toDto(product));
     }
