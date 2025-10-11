@@ -56,13 +56,13 @@ public class ProductController {
             @RequestBody ProductDto data
     ){
         var product = productRepository.findById(id).orElse(null);
-        if(product == null){
-            return ResponseEntity.notFound().build();
-        }
+
         productMapper.update(data,product);
         var category = categoryRepository.findById(data.getCategoryId()).orElse(null);
+        if(product == null || category == null){
+            return ResponseEntity.notFound().build();
+        }
         product.setCategory(category);
-        product.setId(id);
         productRepository.save(product);
         return  ResponseEntity.ok(productMapper.toDto(product));
     }

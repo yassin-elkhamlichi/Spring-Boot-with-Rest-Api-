@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 @Getter
 @Data
 public class ProductDto {
-    @JsonIgnore
     private Long id;
     private String name;
     private String description;

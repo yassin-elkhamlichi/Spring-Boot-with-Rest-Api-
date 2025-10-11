@@ -709,3 +709,35 @@ public class ChangePasswordReqeust {
     private String newPassword;
 }
 ```
+---
+-> i work on Product and in update exist same different
+```java
+@PutMapping("/{id}")
+    public ResponseEntity<ProductDto> updateProduct(
+            @PathVariable Long id,
+            @RequestBody ProductDto data
+    ){
+        var product = productRepository.findById(id).orElse(null);
+
+        productMapper.update(data,product);
+        var category = categoryRepository.findById(data.getCategoryId()).orElse(null);
+        if(product == null || category == null){
+            return ResponseEntity.notFound().build();
+        }
+        product.setCategory(category);
+        productRepository.save(product);
+        return  ResponseEntity.ok(productMapper.toDto(product));
+    }
+```
+why the different happen?
+becouse in user we RegisterUserDto class and this class  have password field
+and not include id so here when i call class have id 
+the implemantion for update method in mapper class 
+Do change also for id field but for user do just for 2 fields email and 
+password so for resolve this problem you should add this annotation :
+```java
+@Mapping(target = "id", ignore = true)
+void update(ProductDto productDto ,@MappingTarget Product product);
+```
+this tell mapstruct to ignore id field when implement 
+the update method from interface ProductMapper

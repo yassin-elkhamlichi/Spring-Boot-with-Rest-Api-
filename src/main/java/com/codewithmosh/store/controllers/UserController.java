@@ -42,6 +42,7 @@ public class UserController {
     public UserDto createUser(@RequestBody RegisterUserRequest data) {
         var user = userMapper.toEntity(data);
         userRepository.save(user);
+
         var userDto = userMapper.toDto(user);
         return userDto;
     }
