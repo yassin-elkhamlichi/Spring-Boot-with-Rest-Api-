@@ -6,11 +6,17 @@ import com.codewithmosh.store.dtos.UpdateUserDto;
 import com.codewithmosh.store.dtos.UserDto;
 import com.codewithmosh.store.mappers.UserMapper;
 import com.codewithmosh.store.repositories.UserRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -39,12 +45,24 @@ public class UserController {
        return ResponseEntity.ok(userMapper.toDto(user));
     }
     @PostMapping
-    public UserDto createUser(@RequestBody RegisterUserRequest data) {
+    public UserDto createUser(
+            @Valid @RequestBody RegisterUserRequest data) {
         var user = userMapper.toEntity(data);
         userRepository.save(user);
 
         var userDto = userMapper.toDto(user);
         return userDto;
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,String>> HundleValidationErrors(
+            MethodArgumentNotValidException exception
+    ){
+        var errors = new HashMap<String,String>();
+        exception.getBindingResult().getFieldErrors().forEach(
+                error -> {
+                    errors.put(error.getField(), error.getDefaultMessage());
+                });
+        return ResponseEntity.badRequest().body(errors);
     }
     @PutMapping("/{id}")
     public  ResponseEntity updateUser(
@@ -89,5 +107,4 @@ public class UserController {
         userRepository.save(user);
         return ResponseEntity.ok().build();
     }
-
 }

@@ -743,3 +743,226 @@ this tell mapstruct to ignore id field when implement
 the update method from interface ProductMapper
 ---
 # 4 Validation :
+## 4.1 Jakarta validation :
+instead of check fields manually we can use jakarta validation
+for check for example if field emty or null or is string  ...
+**String Validation**
+```java
+@NotBlank
+private String name;
+@NotEmpty
+private String description;
+@Size(min = 1, max = 5)
+private String code;
+@Email
+private String email;
+@Pattern(regexp = "^\\d{10}$")
+private String phone;
+```
+@Not blank mean that field can not be null or empty
+
+**Number Validation**
+```java
+@Min(value = 0)
+@Max(value = 100)
+private int age;
+@Positive
+@PositiveOrZero
+@Negative
+@NegativeOrZero
+```
+**Date  Validation**
+```java
+@Past
+@PastOrPresent
+@Future
+@FutureOrPresent
+private Date birthDate;
+@DateTimeFormat(pattern = "yyyy-MM-dd")
+```
+**General validation**
+```java
+@NotNull
+```
+!!! to use jakarta validation you should add this dependency in pom.xml
+write in the search validation and you see this :
+```xml
+  <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+```
+example : 
+```java
+@Data
+public class RegisterUserRequest {
+    @NotBlank(message = "Name is required")
+    @Max(value = 50, message = "Name must be less than 50 characters")
+    private String name;
+    @Email(message = "Email is invalid")
+    private String email;
+    @NotBlank(message = "Password is required")
+    @Size( min= 6,max = 12, message = "Password must be bettwen 6 and 12 characters")
+    private String password;
+}
+```
+after useing this annotation you should go to the method use this class and add
+@Valid annotation like this :
+```java
+@PostMapping
+    public UserDto createUser(
+            @Valid @RequestBody RegisterUserRequest data) {
+                .....
+    }
+```
+if some validation error happen you will see error in postman 
+but without meessage error so if you want 
+see what exactly error happen you should add this method in the same controller  :
+```java
+@ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,String>> HundleValidationErrors(
+            MethodArgumentNotValidException exception
+    ){
+        var errors = new HashMap<String,String>();
+        exception.getBindingResult().getFieldErrors().forEach(
+                error -> {
+                    errors.put(error.getField(), error.getDefaultMessage());
+                });
+        return ResponseEntity.badRequest().body(errors);
+    }
+```
+you dont call this method in create method becouse this 
+method will call automatucly  when validation error happen
+---
+
+---
+
+### 🔁 Step-by-step For how this hundle errors worked
+
+#### 1. **Incoming HTTP POST Request**
+A client sends a POST request to your endpoint with a JSON body, e.g.:
+```json
+{
+  "name": "",
+  "email": "not-an-email",
+  "password": "123"
+}
+```
+
+#### 2. **Spring Maps JSON → `RegisterUserRequest`**
+Spring’s `HttpMessageConverter` (like Jackson) deserializes the JSON into an instance of `RegisterUserRequest`.
+
+At this point, the object exists in memory, but **no validation has happened yet**.
+
+#### 3. **`@Valid` Triggers Validation**
+Because your method parameter is annotated with:
+```java
+@Valid @RequestBody RegisterUserRequest data
+```
+Spring sees `@Valid` and **automatically triggers Jakarta Bean Validation** on the `data` object **before** your method body executes.
+
+> 💡 **Key point**: `@Valid` is the signal that tells Spring: *"Validate this object using the constraints declared on its fields."*
+
+#### 4. **Validation Engine Checks Constraints**
+The validation engine (usually Hibernate Validator, the reference implementation of Jakarta Validation) inspects your `RegisterUserRequest` class:
+
+```java
+@NotBlank(message = "Name is required")
+@Max(value = 50, message = "Name must be less than 50 characters")
+private String name;
+
+@Email(message = "Email is invalid")
+private String email;
+
+@NotBlank(message = "Password is required")
+@Size(min = 6, max = 12, message = "Password must be between 6 and 12 characters")
+private String password;
+```
+
+It checks each field:
+- `name` is blank → violates `@NotBlank`
+- `email` is not a valid email → violates `@Email`
+- `password` is only 3 chars → violates `@Size(min=6)`
+
+So **3 constraint violations** are found.
+
+#### 5. **Validation Fails → Throws `MethodArgumentNotValidException`**
+Since validation failed, **Spring does NOT call your `createUser` method body**.
+
+Instead, it **throws a `MethodArgumentNotValidException`**, which is a built-in Spring exception that wraps:
+- The invalid object (`RegisterUserRequest`)
+- The `BindingResult` containing all validation errors
+
+> 🚫 Your `userRepository.save(user);` line **never runs** if validation fails.
+
+#### 6. **Spring Looks for an Exception Handler**
+Spring now searches for a method that can handle `MethodArgumentNotValidException`.
+
+It finds your method:
+```java
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<Map<String,String>> handleValidationErrors(...) { ... }
+```
+
+> ✅ This works because:
+> - It's in the same controller (`@Controller` or `@RestController`)
+> - Or in a `@ControllerAdvice` class (global handler)
+> - And it declares the correct exception type
+
+#### 7. **Your Handler Extracts Error Messages**
+Inside your handler:
+```java
+exception.getBindingResult().getFieldErrors().forEach(
+    error -> {
+        errors.put(error.getField(), error.getDefaultMessage());
+    });
+```
+
+- `getFieldErrors()` returns a list of `FieldError` objects.
+- For each error:
+    - `error.getField()` → e.g., `"name"`, `"email"`, `"password"`
+    - `error.getDefaultMessage()` → the **exact message you wrote** in your annotations:
+        - `"Name is required"`
+        - `"Email is invalid"`
+        - `"Password must be between 6 and 12 characters"`
+
+So your `errors` map becomes:
+```java
+{
+  "name": "Name is required",
+  "email": "Email is invalid",
+  "password": "Password must be between 6 and 12 characters"
+}
+```
+
+#### 8. **Response Sent to Client**
+You return:
+```java
+return ResponseEntity.badRequest().body(errors);
+```
+
+So the client gets a **400 Bad Request** with JSON body:
+```json
+{
+  "name": "Name is required",
+  "email": "Email is invalid",
+  "password": "Password must be between 6 and 12 characters"
+}
+```
+
+---
+
+### ✅ Summary: The Chain of Events
+
+| Step | What Happens |
+|------|--------------|
+| 1 | Request arrives with invalid JSON |
+| 2 | Spring deserializes JSON → `RegisterUserRequest` |
+| 3 | Sees `@Valid` → runs Jakarta Validation |
+| 4 | Validator checks your annotations (`@NotBlank`, `@Email`, etc.) |
+| 5 | Violations found → throws `MethodArgumentNotValidException` |
+| 6 | Spring catches it and looks for `@ExceptionHandler` |
+| 7 | Your handler extracts **your custom messages** from the DTO |
+| 8 | Returns 400 + error map to client |
+
+---
