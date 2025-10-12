@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class RegisterUserRequest {
     @NotBlank(message = "Name is required")
-    @Max(value = 50, message = "Name must be less than 50 characters")
+    @Size(min=  2, max = 50, message = "Name must be between 2 and 50 characters")
     private String name;
     @Email(message = "Email is invalid")
     private String email;

@@ -53,17 +53,7 @@ public class UserController {
         var userDto = userMapper.toDto(user);
         return userDto;
     }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,String>> HundleValidationErrors(
-            MethodArgumentNotValidException exception
-    ){
-        var errors = new HashMap<String,String>();
-        exception.getBindingResult().getFieldErrors().forEach(
-                error -> {
-                    errors.put(error.getField(), error.getDefaultMessage());
-                });
-        return ResponseEntity.badRequest().body(errors);
-    }
+
     @PutMapping("/{id}")
     public  ResponseEntity updateUser(
         @PathVariable(name = "id") Long id,

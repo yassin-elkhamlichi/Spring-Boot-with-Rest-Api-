@@ -966,3 +966,25 @@ So the client gets a **400 Bad Request** with JSON body:
 | 8 | Returns 400 + error map to client |
 
 ---
+!!!!!! Problem : 
+if i want do this in another controller i should repeat the same logic in all the
+controllers !!!!!!!!
+**Global Error Handling**
+the idea instead write the same logic in many classes
+we write it in one class
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,String>> HundleValidationErrors(
+            MethodArgumentNotValidException exception
+    ){
+        var errors = new HashMap<String,String>();
+        exception.getBindingResult().getFieldErrors().forEach(
+                error -> {
+                    errors.put(error.getField(), error.getDefaultMessage());
+                });
+        return ResponseEntity.badRequest().body(errors);
+    }
+}
+```
