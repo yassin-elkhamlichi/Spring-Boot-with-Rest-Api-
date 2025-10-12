@@ -1017,4 +1017,25 @@ public class LowerCaseValidator implements ConstraintValidator<LowerCase, String
 ```
 <LowerCase, String> the first is annotation you create and 
 String is the type the field you applied this annotation
+---
+### Validating Business Rules :
+if we want to check if email unique we need to use business rules
+```java
+    @PostMapping
+    public ResponseEntity<?> registerUserRequest(
+            @Valid @RequestBody RegisterUserRequest data
+    ) {
 
+        if(userRepository.existsByEmail(data.getEmail()))
+            return ResponseEntity.badRequest().body(
+                    Map.of("email","Email already exists"));
+        var user = userMapper.toEntity(data);
+        userRepository.save(user);
+        return ResponseEntity.ok(userMapper.toDto(user));
+    }
+```
+this check if email unique or no .
+why we dont use custom  annotation :
+becouse we need enter in the method and check if email unique or no
+but when you use the validation jakarta tou dont enter the method and jakarata check it before
+enter the method 
