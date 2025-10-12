@@ -1,6 +1,7 @@
 package com.codewithmosh.store.dtos;
 
 
+import com.codewithmosh.store.validation.LowerCase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.Data;
 public class RegisterUserRequest {
     @NotBlank(message = "Name is required")
     @Size(min=  2, max = 50, message = "Name must be between 2 and 50 characters")
+    @LowerCase
     private String name;
     @Email(message = "Email is invalid")
     private String email;

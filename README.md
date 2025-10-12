@@ -988,3 +988,33 @@ public class GlobalExceptionHandler {
     }
 }
 ```
+somthing we need more control for the validation 
+so you can create some annotation 
+### 4.2 Implementing Custom Validation
+First you should create new package named validation
+and in this package you should create new annotation name the name you want to write it in 
+the dto class 
+in my example we named it LowerCase 
+```java
+@Target(ElementType.FIELD) // this annotation will be used in field because you are choosing field
+@Retention(RetentionPolicy.RUNTIME) // here you choose when this annotation work
+@Constraint(validatedBy =  LowerCaseValidator.class) // this annotation will choose the class content logic validation
+public @interface LowerCase {
+    String message() default "Must be lowercase";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+```
+and after you should  create new class named LowerCaseValidator
+```java
+public class LowerCaseValidator implements ConstraintValidator<LowerCase, String> {
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
+        if(value == null) return true;
+        return s.equals(s.toLowerCase());
+    }
+}
+```
+<LowerCase, String> the first is annotation you create and 
+String is the type the field you applied this annotation
+
