@@ -1039,3 +1039,25 @@ why we dont use custom  annotation :
 becouse we need enter in the method and check if email unique or no
 but when you use the validation jakarta tou dont enter the method and jakarata check it before
 enter the method 
+---
+### Romarque in Exercice :
+somthing when you add entitie for example named Cart even if you wrote
+@Table(name = "Cart") hibernete will searche on table named cart
+so for resolve this problem you should add this line in 
+yaml file 
+```yaml
+  jpa:
+    show-sql: true // just for see  the sql in your console
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+          // this tell hibernete  to use this naming strategy exact with dont  change the name
+```
+
+For store id type uuid to string in db yiou should add this 
+in your entity
+```java
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id" , columnDefinition = "CHAR(36)")
+    private UUID  id;
+```

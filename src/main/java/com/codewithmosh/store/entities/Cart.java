@@ -1,22 +1,29 @@
 package com.codewithmosh.store.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-@Data
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
 @Entity
-@Table(name = "Cart")
+@Table(name = "`Cart`")
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id" , columnDefinition = "CHAR(36)")
     private UUID  id;
-    @Column(name = "date_created")
-    private Date date_created;
+    @Column(name = "dateCreated")
+    private Date dateCreated;
     @OneToMany(mappedBy = "cart")
     private Set<CartItem> cartItem = new HashSet<>();
 

@@ -7,3 +7,6 @@ spring:
     password: 9999
   jpa:
     show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
