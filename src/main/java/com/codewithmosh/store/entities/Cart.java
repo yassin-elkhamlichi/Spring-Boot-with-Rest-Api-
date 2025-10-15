@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,5 +27,8 @@ public class Cart {
     private Date dateCreated;
     @OneToMany(mappedBy = "cart" , cascade = CascadeType.ALL)
     private Set<ItemCart> itemCart = new HashSet<>();
+    public BigDecimal getTotalPrice() {
+        return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
 }

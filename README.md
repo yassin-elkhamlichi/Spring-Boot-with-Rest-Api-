@@ -1085,3 +1085,13 @@ same name if you have field with different name you should add mapping :
 @Mapping(target = "productId", source = "id")
 ```
 target for the object you return and source for the object you want to convert
+
+-> when i want to get cart i should tell mapstruct items in cartDto is itemCart in cart
+and tell mapstruct to calcul total price based on method i write it in my class cart 
+this method is this : 
+```java
+ public BigDecimal getTotalPrice() {
+        return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+```
+first we get each itemCart and get total price and after we sum them

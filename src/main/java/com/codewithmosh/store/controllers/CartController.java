@@ -34,6 +34,7 @@ public class CartController {
       var cartDto =  cartMapper.toDto(cart);
       return ResponseEntity.ok(cartDto);
     }
+
     @PostMapping("/{id}/item")
     public ResponseEntity<ItemCartDto> addToCart(
             @PathVariable UUID  id,
@@ -67,6 +68,17 @@ public class CartController {
         cartRepository.save(cart);
         var cartItemCartDto = cartMapper.toDto(itemCart);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CartDto> getCart(
+            @PathVariable UUID id
+    ){
+        var cart = cartRepository.findById(id).orElse(null);
+        if(cart == null)
+            return ResponseEntity.notFound().build();
+        var cartDto = cartMapper.toDto(cart);
+        return ResponseEntity.ok(cartDto);
     }
 
 }
