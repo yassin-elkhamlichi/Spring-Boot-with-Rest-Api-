@@ -1,6 +1,6 @@
 package com.codewithmosh.store.entities;
 
-import com.codewithmosh.store.repositories.ItemCartRepository;
+import com.codewithmosh.store.dtos.ItemCartDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

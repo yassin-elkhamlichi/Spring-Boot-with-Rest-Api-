@@ -15,19 +15,19 @@ public class ItemCart {
     @Column(name = "id")
     private long id;
     
-    @Column(name = "quantity" , columnDefinition = "int default 1")
+   @Column(name = "quantity" , columnDefinition = "int default 1")
     private int quantity;
 
-    @ManyToOne(cascade = CascadeType.ALL , fetch = FetchType.LAZY)
+    @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
-    @ManyToOne(cascade = CascadeType.ALL , fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
 
-    public BigDecimal getTotalPrice(){
+public BigDecimal getTotalPrice(){
         return product.getPrice().multiply(BigDecimal.valueOf(quantity));
     }
 }

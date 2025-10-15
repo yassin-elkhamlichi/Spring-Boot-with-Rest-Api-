@@ -1143,3 +1143,76 @@ addItem(), completeOrder(), calculateTotal()
 Validation rules, business rules, calculations
 
 State transitions, invariants
+
+!!!!! the controller most content just req and res so to clean controller 
+we should add the logic in service 
+but what about ResponseEntity?
+easy just create new package for exception 
+this code before use service and exception :
+```java
+ @PostMapping("/{id}/item")
+    public ResponseEntity<ItemCartDto> addToCart(
+            @PathVariable UUID  id,
+            @RequestBody AddItemToCartReqeustDto data
+            ) {
+        var cart = cartRepository.findById(id).orElse(null);
+        var product = productRepository.findById(productId).orElse(null);
+        if (cart == null)
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("error" , "Cart not found")
+            );
+        if (product == null)
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("error" , "Product not found")
+            );
+        var itemCart = cart.addItemCart(product);
+        cartRepository.save(cart);
+        var cartItemCartDto = cartMapper.toDto(itemCart);
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+    }
+```
+and after : 
+```java
+ @PostMapping("/{id}/item")
+    public ResponseEntity<ItemCartDto> addToCart(
+            @PathVariable UUID  id,
+            @RequestBody AddItemToCartReqeustDto data
+            ) {
+        var cartItemCartDto = cartService.addToCart(id, data.getProductId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+    }
+```
+with code in the service :
+```java
+  public ItemCartDto addToCart(UUID id, Long productId) {
+        var cart = cartRepository.findById(id).orElse(null);
+        var product = productRepository.findById(productId).orElse(null);
+        if (cart == null)
+            throw new CartNotFoundException();
+        if (product == null)
+            throw new ProductNotFoundException();
+        var itemCart = cart.addItemCart(product);
+        cartRepository.save(cart);
+        return cartMapper.toDto(itemCart);
+    }
+```
+and don't forget what you should write in the exception classes
+```java
+public class CartNotFoundException extends RuntimeException {}
+public class ProductNotFoundException extends RuntimeException {}
+```
+and in Controller class you should add this :
+```java
+@ExceptionHandler(CartNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleCartException(){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("error" , "Cart not found")
+        );
+    }
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleProductException(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("error" , "Product not found")
+        );
+    }
+```
