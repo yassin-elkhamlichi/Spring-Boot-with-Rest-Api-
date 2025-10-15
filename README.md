@@ -1106,3 +1106,40 @@ we do this go to CartRepository and add this
 ```
 the first line tell spring to get all items in carts and all products in carts 
 and the second is the qeury to get cart
+
+### Information expert principle : 
+when you write a code in controle and 
+and repeat same logic in many methods in the same 
+controller you should to respect this princiiple
+so you should move this logic to service
+or to Expert class (in my case Cart is expert on ItemCart)
+so the method calcul Total price for all ietms should be
+exist in the cart class
+and if you want to get just one ItemCart by id 
+you can add this method in Cart class and call it when you need without 
+repeat the same logic in controller or in any other place
+```java
+public ItemCart getItemCart(Long Product) {
+    retrun   itemCart.stream()
+            .filter(item -> item.getProduct().getId().equals(Product)).
+            findFirst().
+            orElse(null);
+}
+```
+### Anemic Domain :
+summery is principe tell : classes that only have data 
+so that mean "information expert principle " should wrote in service rolated with expert class
+
+### Rich Domain :
+summery is principe tell : classes that  have data and behavior :
+Data = State/Properties
+id, items, status, total
+
+product, quantity, price
+
+Behavior = Business Logic/Methods
+addItem(), completeOrder(), calculateTotal()
+
+Validation rules, business rules, calculations
+
+State transitions, invariants

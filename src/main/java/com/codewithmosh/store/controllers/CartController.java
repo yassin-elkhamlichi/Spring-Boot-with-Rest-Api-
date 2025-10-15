@@ -47,25 +47,7 @@ public class CartController {
             return ResponseEntity.notFound().build();
         if (product == null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        System.out.println(product.getId());
-        var itemCart = new ItemCart();
-        itemCart.setCart(cart);
-        itemCart.setProduct(product);
-        int totalQuantity = 1;
-        if (!itemCartRepository.existsByProductIdAndCartId(data.getProductId(), id))
-        {
-            itemCart.setQuantity(totalQuantity);
-
-        }else {
-            itemCart = itemCartRepository.findByProductIdAndCartId(data.getProductId(),id);
-            totalQuantity = itemCart.getQuantity() + 1;
-            itemCart.setQuantity(totalQuantity);
-
-        }
-
-        Set<ItemCart> itemCarts = cart.getItemCart();
-        itemCarts.add(itemCart);
-        cart.setItemCart(itemCarts);
+        var itemCart = cart.addItemCart(product);
         cartRepository.save(cart);
         var cartItemCartDto = cartMapper.toDto(itemCart);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
@@ -89,16 +71,16 @@ public class CartController {
            @Valid @RequestBody CartProductUpdateDto data
     ){
         var cart = cartRepository.getCartWithItemsAndProducts(id);
-        var product = productRepository.findById(idProduct).orElse(null);
-        var itemCart = itemCartRepository.findByProductIdAndCartId(idProduct, id);
         if (cart == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     Map.of("error" , "Cart not found")
             );}
+        var product = productRepository.findById(idProduct).orElse(null);
         if (product == null ){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     Map.of("error" , "Product not found")
             );}
+        var itemCart = cart.getItemCart(idProduct);
         if (itemCart == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     Map.of("error" , "Item was not found in the cart")

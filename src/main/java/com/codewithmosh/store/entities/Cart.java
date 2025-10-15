@@ -1,5 +1,6 @@
 package com.codewithmosh.store.entities;
 
+import com.codewithmosh.store.repositories.ItemCartRepository;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -31,4 +32,27 @@ public class Cart {
         return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public ItemCart getItemCart(Long Product) {
+        return  itemCart.stream()
+                .filter(item -> item.getProduct().getId().equals(Product)).
+                findFirst().
+                orElse(null);
+    }
+
+    public ItemCart addItemCart(Product product ) {
+        var itemCart = getItemCart(product.getId());
+        int totalQuantity = 1;
+        if (itemCart == null)
+        {
+            itemCart = new ItemCart();
+            itemCart.setCart(this);
+            itemCart.setProduct(product);
+            itemCart.setQuantity(totalQuantity);
+            getItemCart().add(itemCart);
+
+        }else {
+            itemCart.setQuantity(itemCart.getQuantity() + 1);
+        }
+        return itemCart;
+    }
 }
