@@ -1095,3 +1095,14 @@ this method is this :
     }
 ```
 first we get each itemCart and get total price and after we sum them
+
+-> everything is good but we have little problem rolated with the number the query send 
+so to make just send one queryto get all carts and all items in carts
+we do this go to CartRepository and add this 
+```java
+    @EntityGraph(attributePaths = "itemCart.product")
+    @Query("select c from Cart c where c.id = :cartId ")
+    Optional<Cart> getCartWithItemsAndProducts(@Param("cartId") UUID cartId);
+```
+the first line tell spring to get all items in carts and all products in carts 
+and the second is the qeury to get cart
