@@ -15,16 +15,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Entity
-@Table(name = "`Cart`")
+@Table(name = "Cart")
 public class Cart {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "id" , columnDefinition = "CHAR(36)")
     private UUID  id;
     @Column(name = "dateCreated")
     private Date dateCreated;
-    @OneToMany(mappedBy = "cart")
-    private Set<CartItem> cartItem = new HashSet<>();
+    @OneToMany(mappedBy = "cart" , cascade = CascadeType.ALL)
+    private Set<ItemCart> itemCart = new HashSet<>();
 
 }

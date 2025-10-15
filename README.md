@@ -1061,3 +1061,27 @@ in your entity
     @Column(name = "id" , columnDefinition = "CHAR(36)")
     private UUID  id;
 ```
+
+---
+if you want to get value to fielad in the dto you can write this
+```java
+    @Mapping(target = "totalPrice", expression = "java(itemCart.getTotalPrice())")
+    ItemCartDto toDto(ItemCart itemCart);
+```
+java(itemCart.getTotalPrice()) this call the methode and save return in totalPrice
+```java
+    @Mapping(target = "product", expression = "java(itemCart.getProduct() != null ? toDto(itemCart.getProduct()) : null)")
+    ItemCartDto toDto(ItemCart itemCart);
+    CartProductDto toDto(Product product);
+```
+when dto include another dto you should tell mapstruct what should do
+for example in my case i have itemCartDto include productDto
+so i should add new method to convert product to productDto
+and call it mapping in itemCartDto
+
+**When you try to convert toDto or toEntity** map struct change just the field has
+same name if you have field with different name you should add mapping :
+```aiignore
+@Mapping(target = "productId", source = "id")
+```
+target for the object you return and source for the object you want to convert
