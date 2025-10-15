@@ -13,5 +13,5 @@ import java.util.UUID;
 public interface CartRepository  extends CrudRepository<Cart, UUID> {
     @EntityGraph(attributePaths = "itemCart.product")
     @Query("select c from Cart c where c.id = :cartId ")
-    Optional<Cart> getCartWithItemsAndProducts(@Param("cartId") UUID cartId);
+    Cart getCartWithItemsAndProducts(@Param("cartId") UUID cartId);
 }
