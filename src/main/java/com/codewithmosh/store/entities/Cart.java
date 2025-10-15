@@ -26,7 +26,7 @@ public class Cart {
     private UUID  id;
     @Column(name = "dateCreated")
     private Date dateCreated;
-    @OneToMany(mappedBy = "cart" , cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart" , cascade = CascadeType.ALL , orphanRemoval = true)
     private Set<ItemCart> itemCart = new HashSet<>();
     public BigDecimal getTotalPrice() {
         return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -54,5 +54,16 @@ public class Cart {
             itemCart.setQuantity(itemCart.getQuantity() + 1);
         }
         return itemCart;
+    }
+
+    public void removeItemCart(Long productId) {
+        var itemCArt = getItemCart(productId);
+        if(itemCart != null) {
+            itemCart.remove(itemCArt);
+            itemCArt.setCart(null);
+        }
+    }
+    public void clear(){
+        itemCart.clear();
     }
 }

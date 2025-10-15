@@ -92,4 +92,32 @@ public class CartController {
 
     }
 
+    @DeleteMapping("/{id}/items/{idProduct}")
+    public ResponseEntity<?> deleteItemInCart(
+            @PathVariable("id") UUID id,
+            @PathVariable("idProduct") Long idProduct
+    ){
+        var cart = cartRepository.getCartWithItemsAndProducts(id);
+        if(cart == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("error" , "Cart not found")
+            );
+       cart.removeItemCart(idProduct);
+        cartRepository.save(cart);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/items")
+    public ResponseEntity<?> clearCart(
+            @PathVariable("id") UUID id
+    ){
+        var cart = cartRepository.getCartWithItemsAndProducts(id);
+        if(cart == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("error" , "Cart not found")
+            );
+        cart.clear();
+        cartRepository.save(cart);
+        return ResponseEntity.noContent().build();
+    }
 }
