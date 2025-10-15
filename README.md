@@ -1216,3 +1216,49 @@ and in Controller class you should add this :
         );
     }
 ```
+---
+
+## Documenting Apis with Swagger : 
+A tool that automatically generate documentation for your apis
+first ypu should add this depandency :
+```xml
+   <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.8.13</version>
+   </dependency>
+```
+and after to acces to swagger you should 
+go to http://localhost:8080/swagger-ui.html
+and after you can see all the Apis in your project
+and also you can test each Api
+if you want to change the names of Controller in swagger 
+we should go to controller and add this annotation
+```java
+@Api(tags = "Cart")
+public class CartController {}
+```
+and i can also add description for each endpoint
+just add this annotation
+
+```java
+import io.swagger.v3.oas.annotations.Operation;
+
+@PostMapping("/{id}/item")
+@Operation(summary = "Add item to cart")
+public ResponseEntity<ItemCartDto> addToCart()
+```
+and also you can add desc for param using @Parameter annotation
+
+```java
+    @Operation(summary = "Add item to cart")
+    @PostMapping("/{id}/item")
+    public ResponseEntity<ItemCartDto> addToCart(
+            @Parameter(description = "id of cart")
+            @PathVariable UUID  id,
+            @RequestBody AddItemToCartReqeustDto data
+            ) {
+        var cartItemCartDto = cartService.addToCart(id, data.getProductId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+    }
+```

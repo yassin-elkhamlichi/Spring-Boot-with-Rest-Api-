@@ -10,6 +10,9 @@ import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.ItemCartRepository;
 import com.codewithmosh.store.repositories.ProductRepository;
 import com.codewithmosh.store.services.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,7 @@ import java.util.*;
 @Data
 @RestController
 @RequestMapping("/carts")
+@Tag(name = "Cart")
 public class CartController {
     private final CartMapper cartMapper;
     private final CartRepository cartRepository;
@@ -34,8 +38,10 @@ public class CartController {
       return ResponseEntity.ok(cartDto);
     }
 
+    @Operation(summary = "Add item to cart")
     @PostMapping("/{id}/item")
     public ResponseEntity<ItemCartDto> addToCart(
+            @Parameter(description = "id of cart")
             @PathVariable UUID  id,
             @RequestBody AddItemToCartReqeustDto data
             ) {
