@@ -1306,3 +1306,128 @@ public ResponseEntity getPhoto(@PathVariable("id") Long id){
 }
 ```
 SystemFileRessource is a class that i create to get the file from the system
+
+---
+# 5 Spring Security : 
+First you should add Spring security depandency in your pom file
+and after you get endpoint login automatically generate page login 
+and pass and name for user
+
+## Authintication Methods :
+1 . **Session_based** : 
+user send Post/login to server and server check credentials if is valid server will
+create session file where stored information about user and return session id to
+user and after this browser (client side) storage session id in the cookie
+is not scarbed becouse more users mean more storage in the server 
+here we where need token based  authentication
+2. **Token_based** : (JWT) (to see how exactly token like you can go to this wibsite https://www.jwt.io/)
+Rest Api use this method .
+so token work like this : client send Post/login to server and server check credentials if is valid
+server will craete token(like password centent all the thing about user) and return it to user
+and after if user want to send and other req  is autimatically send req with  auth = {token}
+so for summery the key different is in token the token saved in client and server just decoudage it and extract info 
+and after compar it with the data in bd
+---
+now we need to create package named confiig
+and add file to config the srping security
+so when we went to config spring security 
+we nedd to use 3 things Csrf and **stateless session** so what this ?
+when we just learn we don't use the session/coockies
+so that named stateless session and the RestApi don't use session
+named Stateless RestApi 
+and **CSRF** is mean CSRF (Cross-Site Request Forgery) is an attack where a malicious site tricks a user’s browser 
+into making unwanted requests to your app using the user’s active session
+so when we dont use session we need to disbale csrf (in case we use jwt or dont use anything)
+in the package config we create class named SecurityConfig
+and the third option is **Authorization**
+## 3.1 what is the different between Authentication and Authorization ? :
+### 🔑 1. **Authentication = "Who are you?"**
+
+> ✅ **Verifying identity** — proving you are **who you say you are**.
+
+#### Examples:
+- Logging in with **email + password**
+- Scanning your **fingerprint**
+- Using **Google Sign-In**
+- Entering a **one-time code (2FA)**
+
+#### In code:
+When you send:
+```json
+{ "email": "you@example.com", "password": "secret123" }
+```
+→ The server checks: *"Is this user real? Is the password correct?"*  
+✅ If yes → **Authenticated!**
+
+> 🧠 Think: **AuthN = "Are you really you?"**
+
+---
+
+### 🚪 2. **Authorization = "What are you allowed to do?"**
+
+> ✅ **Checking permissions** — now that we know **who you are**, what can you access?
+
+#### Examples:
+- A regular user **can’t delete** another user’s post
+- An **admin** can access `/api/admin/users`
+- A **guest** can only view public pages
+- A **paid user** can download premium content
+
+#### In code:
+After login, you try to access:
+```
+DELETE /api/posts/123
+```
+→ Server checks: *"Is this user the owner of post 123? Or an admin?"*  
+✅ If yes → **Authorized!**  
+❌ If no → **403 Forbidden**
+
+> 🧠 Think: **AuthZ = "Are you allowed to do this?"**
+
+---
+### code sending if each one fild :
+> 💡 **401 = "You’re not logged in (or token is bad)"**  
+> 💡 **403 = "You’re logged in, but you don’t have permission"**
+
+---
+
+
+### 💬 summery:
+- **Authentication** = **Login** (proving you are you)
+- **Authorization** = **Permissions** (what you’re allowed to do after login)
+
+You **always authenticate first**, then authorize.
+---
+let's return now to configuration file 
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // first we need to make session stateless
+        //second Disable csrf
+        //third disable default login page
+        http
+                .sessionManagement(c ->
+                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(c ->
+                        c.anyRequest().permitAll());
+
+            return http.build();
+    }
+}
+```
+this method run automatically in the runtime
+authorizeHttpRequests(c ->
+c.anyRequest().permitAll()); this line give us access for  all the endpoint  
+in our project without authintictaion 
+if we want to add specifice reqeust 
+```java
+.authorizeHttpRequests(c -> c
+                        .requestMatchers("/carts/**").permitAll()
+                        .anyRequest().authenticated());
+```
+this line tell spring security cart/** is public but any other 
+request need to be authenticated
