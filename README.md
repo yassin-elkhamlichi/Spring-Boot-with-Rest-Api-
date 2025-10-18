@@ -1262,3 +1262,47 @@ and also you can add desc for param using @Parameter annotation
         return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
     }
 ```
+
+---
+
+## How i can work with  Files IN REQ :
+ first when i send the req in postman should be Post 
+ and in the body reqeust i dont choose send data as json 
+ i choose data form option and first in the key i chose tyoe to file instead text 
+ and after in the value i select the file
+ and after if i want add object i add it 
+ but i need to map it from string to object
+ like this in controller :
+ ```java
+    @Value("${server.port}") String port;
+    @Value("${server.server}") String server;
+ @PostMapping("/upload")
+public ResponseEntity<Map<String,String>> uploadFile(
+        @RequestPart("file") MultipartFile file,
+        @RequestPart("client") String ClientString
+        ){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Client client = objectMapper.readValue(ClientString, Client.class);
+        String path = "src/ressoruces/static/uploads/"+cllient.getId()+".jps";
+        path.transferTo(Path.of(path));
+        client.setImage("http//:"+server+"/"+port+"/uploads/"+cllient.getId());
+        return client
+}
+ ```
+the ObjectMapper is a class from jackson library include in spring
+can mapper  json to object
+the url for image not work you should add endpoint for it
+
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+
+@GetMapping("photos/{id}")
+public ResponseEntity getPhoto(@PathVariable("id") Long id){
+    String path = "src/ressoruces/static/uploads/"+id+".jps";
+    SystemFileRessource fileRessource = new SystemFileRessource(path);
+    if(!fileRessource.exists())
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    return ResponseEntity.type(MediaType.IMAGE_JPEG).ok(fileRessource);
+}
+```
+SystemFileRessource is a class that i create to get the file from the system
