@@ -2,6 +2,7 @@ package com.codewithmosh.store.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,13 +18,14 @@ public class SecurityConfig {
         //second Disable csrf
         //third disable default login page
          http
-                    .csrf(AbstractHttpConfigurer::disable)
-                    .sessionManagement(c -> c
-                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authorizeHttpRequests(c -> c
-                            .requestMatchers("/carts/**").permitAll()
-                            .requestMatchers("/swagger-ui").permitAll()
-                            .anyRequest().authenticated());
-            return http.build();
+                 .csrf(AbstractHttpConfigurer::disable)
+                 .sessionManagement(session -> session
+                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                 .authorizeHttpRequests(auth -> auth
+                         .requestMatchers("/carts/**").permitAll()
+                         .requestMatchers("/error").permitAll()  // IMPORTANT!
+                         .anyRequest().authenticated()  // Change back to authenticated
+                 );
+        return http.build();
     }
 }

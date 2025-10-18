@@ -1425,9 +1425,23 @@ c.anyRequest().permitAll()); this line give us access for  all the endpoint
 in our project without authintictaion 
 if we want to add specifice reqeust 
 ```java
-.authorizeHttpRequests(c -> c
-                        .requestMatchers("/carts/**").permitAll()
-                        .anyRequest().authenticated());
+  http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/carts/**").permitAll()
+                         .requestMatchers("/error").permitAll()  // IMPORTANT!
+                         .anyRequest().authenticated()  // Change back to authenticated
+                 );
+return http.build();
 ```
 this line tell spring security cart/** is public but any other 
 request need to be authenticated
+Wow this  works :
+When Spring Security blocks a request with 403, it tries to redirect to the /error endpoint to show the error page.
+But /error was ALSO blocked by .anyRequest().authenticated(),
+so it created an infinite loop or just showed "Forbidden"!
+The fix:
+java.requestMatchers("/error").permitAll()  // ✅ Allows error page to show
+Now when there's an error, Spring can actually display it instead of blocking the error page itself!
