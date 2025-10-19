@@ -5,21 +5,25 @@ import com.codewithmosh.store.exception.InvalidPasswordException;
 import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 @AllArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
-    public String authUser(AuthUserDto authUserDto , UserRepository userRepository){
-        var user = userRepository.findByEmail(authUserDto.getEmail());
-        if(user == null)
-            throw new UserNotFoundException();
-
-        if(!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
-            throw new InvalidPasswordException();
-
-        return "Authenticated";
+    private final UserRepository userRepository;
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("user not found"));
+        return new User(user.getEmail(),
+                user.getPassword(),
+                Collections.emptyList());
     }
 }

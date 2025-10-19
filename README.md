@@ -1461,3 +1461,122 @@ and after you should add this line in the controller before you save the user :
 ```java
 user.setPassword(passwordEncoder.encode(user.getPassword()));
 ```
+
+## 5.2 Authentication Management
+I use service to manage authantification but spring security 
+can automatically manage authantification for you
+instead of this : 
+```java
+@Service
+@AllArgsConstructor
+public class UserService {
+    private final PasswordEncoder passwordEncoder;
+    public String authUser(AuthUserDto authUserDto , UserRepository userRepository){
+        var user = userRepository.findByEmail(authUserDto.getEmail());
+        if(user == null)
+            throw new UserNotFoundException();
+
+        if(!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
+            throw new InvalidPasswordException();
+
+        return "Authenticated";
+    }
+}
+```
+this logic exist in spring security 
+we have the  **AuthenticationManager** this interfac super interface for all authentication managers
+and we have **AuthenticationProvider** implemented from it and we have **DaoAuthenticationProvider**
+extends from the last one and this last one has to fields : 
+**userDetailsService** and **passwordEncoder** and the methode authenticate() 
+**userDetailsService** is an object find the user by String (byUserName)
+but you can use another field like email
+so for simple userDetialsService get the user from bd if exist
+and after the DaoAuthenticationProvider use the passwordEncoder to compare the password
+and after generate response automatically and also hundle exception  for you
+userDetialsService this method have methode named loedByUsername()
+and this method return **UserDetails**
+so what is **UserDetails** ? 
+is in interface has all the methods you need for user like 
+isAccountNonExpired(), isAccountNonLocked(), isCredentialsNonExpired(), isEnabled() ...
+and also 2 fields : username and password 
+soo the new version of our service is : 
+```java
+@Service
+@AllArgsConstructor
+public class UserService implements UserDetailsService {
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        
+        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("user not found"));
+        return new User(user.getEmail(),
+                user.getPassword(), 
+                Collections.emptyList());
+    }
+}
+```
+but we need some things in config file to make it work
+```java
+ public final UserDetailsService userDetailsService;
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(){
+        var provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        return provider;
+    }
+```
+so how this work?
+first we give the passwordEncoder from the Bean we already wrote 
+and what about UserDetailsService ? 
+we declared userService as service and is implement from
+UserDetailsService  so in the runtime spring will injected  our UserSrvice into
+SecuirtyCnfig and save it in the field userDetailsService.
+After this we need to  add this line to the config file :
+```java
+   @Bean
+public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration config
+) throws Exception {
+    return  config.getAuthenticationManager();
+}
+```
+This method retrieves the pre-configured AuthenticationManager from Spring Security,
+which uses your DaoAuthenticationProvider and UserDetailsService internally
+And after we need to add this in the controller :
+private final AuthenticationManager authenticationManager;
+```java
+    private finale AuthenticationManager authenticationManager;
+    @PostMapping("login")
+    public ResponseEntity<Void> auth(
+            @Valid @RequestBody AuthUserDto authUserDto
+    ) {
+       authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       authUserDto.getEmail(),
+                       authUserDto.getPassword()
+               )
+       );
+        return ResponseEntity.ok().build();
+    }
+```
+we should add management field in the controll becouse is repsonsable for 
+authintication 
+so in summery this work like this :
+The controller sends the credentials to the AuthenticationManager.
+
+The AuthenticationManager delegates the work to the configured DaoAuthenticationProvider.
+
+The DaoAuthenticationProvider uses:
+
+your custom UserDetailsService to load the user from the database.
+
+your configured PasswordEncoder to validate the password.
+
+If authentication succeeds, Spring Security marks the user as authenticated in the security context automatically.
+If it fails, Spring throws exceptions like:
+
+UsernameNotFoundException → user not found
+
+BadCredentialsException → invalid password

@@ -3,13 +3,12 @@ package com.codewithmosh.store.controllers;
 import com.codewithmosh.store.dtos.AuthUserDto;
 import com.codewithmosh.store.exception.InvalidPasswordException;
 import com.codewithmosh.store.exception.UserNotFoundException;
-import com.codewithmosh.store.repositories.UserRepository;
-import com.codewithmosh.store.services.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -18,16 +17,20 @@ import java.util.Map;
 @RequestMapping("/auth")
 @AllArgsConstructor
 public class AuthController {
-    private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
-    private final UserService userService;
+
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("login")
-    public ResponseEntity<String> auth(
+    public ResponseEntity<Void> auth(
             @Valid @RequestBody AuthUserDto authUserDto
     ) {
-        String response = userService.authUser(authUserDto, userRepository);
-        return ResponseEntity.ok(response);
+       authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       authUserDto.getEmail(),
+                       authUserDto.getPassword()
+               )
+       );
+        return ResponseEntity.ok().build();
     }
 
 
