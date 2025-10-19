@@ -1445,3 +1445,19 @@ so it created an infinite loop or just showed "Forbidden"!
 The fix:
 java.requestMatchers("/error").permitAll()  // ✅ Allows error page to show
 Now when there's an error, Spring can actually display it instead of blocking the error page itself!
+---
+### Hashing :
+to make your password more secure you can use hash
+first you should add new bean in you config file like this :
+```java
+ @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+```
+PasswordEncoder is an interface that provides methods to encode and decode passwords.
+and BCryptPasswordEncoder is a class that implements PasswordEncoder and uses the BCrypt algorithm to encode and decode passwords.
+and after you should add this line in the controller before you save the user :
+```java
+user.setPassword(passwordEncoder.encode(user.getPassword()));
+```

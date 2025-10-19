@@ -15,6 +15,7 @@ public class RegisterUserRequest {
     @LowerCase
     private String name;
     @Email(message = "Email is invalid")
+    @NotBlank(message = "Email is required")
     private String email;
     @NotBlank(message = "Password is required")
     @Size( min= 6,max = 12, message = "Password must be bettwen 6 and 12 characters")

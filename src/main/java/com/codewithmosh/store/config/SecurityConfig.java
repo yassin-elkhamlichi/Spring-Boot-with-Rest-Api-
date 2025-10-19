@@ -7,11 +7,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         //first we need to make session stateless
@@ -23,7 +30,8 @@ public class SecurityConfig {
                          .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                  .authorizeHttpRequests(auth -> auth
                          .requestMatchers("/carts/**").permitAll()
-                         .requestMatchers("/error").permitAll()  // IMPORTANT!
+                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                         .requestMatchers("/error").permitAll()
                          .anyRequest().authenticated()  // Change back to authenticated
                  );
         return http.build();
