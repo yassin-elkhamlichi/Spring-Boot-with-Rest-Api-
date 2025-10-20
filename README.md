@@ -1580,3 +1580,113 @@ If it fails, Spring throws exceptions like:
 UsernameNotFoundException → user not found
 
 BadCredentialsException → invalid password
+
+---
+## 5.3  Generate Json Web Tokens(JWT) : 
+first you should add this depandency :
+```xml
+ <dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.12.6</version>
+ </dependency>
+ <dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+ </dependency>
+ <dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+ </dependency>
+```
+and after you should add new service named  JwtService
+```java
+@Service
+public class JwtService {
+    final long tokenExpiration = 86400; // token well expires in 24 hours
+    public String generateToken(String email){
+    return Jwts.builder()
+            .subject(email)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+            .compact();
+
+    }
+}
+```
+Expliation of the code : 
+```java
+public String generateToken(String email){
+```
+> Declares a method that takes an `email` (used as the user identifier) and returns a JWT as a `String`.
+
+```java
+    return Jwts.builder()
+```
+> Starts building a new JWT using the **Java JWT (jjwt)** library’s fluent API.
+
+```java
+            .subject(email)
+```
+> Sets the **`sub` (subject)** claim of the JWT to the user’s email — typically used to identify the principal (user).
+
+```java
+            .issuedAt(new Date())
+```
+> Sets the **`iat` (issued at)** claim to the current timestamp, indicating when the token was created.
+
+```java
+            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+```
+> Sets the **`exp` (expiration)** claim: the token will expire after `tokenExpiration` seconds (since `1000 * tokenExpiration` converts seconds to milliseconds).
+
+```java
+            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+```
+> Signs the JWT using **HMAC-SHA256** with a hardcoded secret key (`"secret"`).  
+> is convert constant value "secret" to Bytes
+> ⚠️ **Warning**: In production, never hardcode secrets — use environment variables or a secure config.
+
+```java
+            .compact();
+```
+> Finalizes and **serializes the JWT** into a compact, URL-safe string (e.g., `xxxxx.yyyyy.zzzzz`).
+
+```java
+}
+```
+> End of method.
+
+✅ **Result**: A signed, time-limited JWT string that represents an authenticated user (identified by email).
+
+and after you should add new dto named JwtResponseDto
+```java
+@Data
+@AllArgsConstructor
+public class JwtResponseDto {
+    private String token;
+}
+```
+and after we return to authController and 
+change the return type of auth method to JwtResponseDto
+```java
+  @PostMapping("login")
+    public ResponseEntity<JwtResponseDto> auth(
+            @Valid @RequestBody AuthUserDto authUserDto
+    ) {
+       authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       authUserDto.getEmail(),
+                       authUserDto.getPassword()
+               )
+       );
+        String token = jwtService.generateToken(authUserDto.getEmail());
+        return ResponseEntity.ok(new JwtResponseDto(token));
+    }
+```
+but this type of secret show error becouse is not secure

@@ -17,7 +17,6 @@ import java.util.Collections;
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

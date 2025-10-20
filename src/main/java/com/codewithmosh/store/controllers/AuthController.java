@@ -1,13 +1,16 @@
 package com.codewithmosh.store.controllers;
 
 import com.codewithmosh.store.dtos.AuthUserDto;
+import com.codewithmosh.store.dtos.JwtResponseDto;
 import com.codewithmosh.store.exception.InvalidPasswordException;
 import com.codewithmosh.store.exception.UserNotFoundException;
+import com.codewithmosh.store.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +22,10 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @PostMapping("login")
-    public ResponseEntity<Void> auth(
+    public ResponseEntity<JwtResponseDto> auth(
             @Valid @RequestBody AuthUserDto authUserDto
     ) {
        authenticationManager.authenticate(
@@ -30,22 +34,13 @@ public class AuthController {
                        authUserDto.getPassword()
                )
        );
-        return ResponseEntity.ok().build();
+        String token = jwtService.generateToken(authUserDto.getEmail());
+        return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleUserNotFoundException(
-            UserNotFoundException ex
-    ){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("message", "user not found")
-        );
-    }
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<Map<String,String>> handleInvalidPasswordException(
-            InvalidPasswordException ex
-    ){
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Void> handleBadCredentialsException(){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
