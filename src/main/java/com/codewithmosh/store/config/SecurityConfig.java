@@ -56,7 +56,8 @@ public class SecurityConfig {
                  .authorizeHttpRequests(auth -> auth
                          .requestMatchers("/carts/**").permitAll()
                          .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                         .requestMatchers("/auth/**").permitAll()
+                         .requestMatchers("/auth/validate").permitAll()
+                         .requestMatchers("/auth/login").permitAll()
                          .requestMatchers("/error").permitAll()
                          .anyRequest().authenticated()  // Change back to authenticated
                  );

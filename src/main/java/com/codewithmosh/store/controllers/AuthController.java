@@ -38,6 +38,15 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
+    @PostMapping("validate")
+    public boolean validate(
+            @RequestHeader("Authorization") String token
+    ){
+        System.out.println("Validate Called with header");
+        var tokenWithoutBearer = token.replace("Bearer","");
+                return jwtService.validateToken(tokenWithoutBearer);
+    }
+
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Void> handleBadCredentialsException(){

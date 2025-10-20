@@ -1770,3 +1770,58 @@ app.jwt.secret=${JWT_SECRET}
  what environment variables are required to run the app — without exposing real secrets.
 so to resolve this we add file named .env.example the text type the file 
 and type in it just the keys without values
+> after generate the token how is validate?
+## 5.4 Validate JWT :
+we need if the token corretc if is expired ..
+so first we need add this method in JwtService
+```java
+  public boolean validateToken(String token){
+        try{
+            var claims = Jwts.parser()
+                        .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+```
+and after we need to add this method in authController
+```java
+@PostMapping("validate")
+public boolean validate(
+@RequestHeader("Authorization") String token
+){
+var tokenWithoutBearer = token.replace("Bearer","");
+return jwtService.validateToken(tokenWithoutBearer);
+}
+```
+but this way is manual validation we need 
+to make spring security do this we use the Filter  class
+the filter class is a class that implements the Filter interface
+and we use it before the controller is check for authintication
+, modify headrer ...
+so this a simple filter :
+```java
+@Component
+public class LoggingFilter  extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+              HttpServletResponse response,
+              FilterChain filterChain) throws ServletException, IOException
+    {
+        System.out.println("Request :  "+ request.getRequestURI());
+        System.out.println("Method :  "+ request.getMethod());
+        filterChain.doFilter(request, response);
+        System.out.println("Response : "+ response.getStatus());
+    }
+}
+```
+and now we see how we can create filter to check the validation : 
+
+
+
+
