@@ -1690,3 +1690,83 @@ change the return type of auth method to JwtResponseDto
     }
 ```
 but this type of secret show error becouse is not secure
+so we need  first to make "secret" as value and save it in the application file 
+and after we call it in the jwtService
+and after we need to use spring dotenv
+### fast documentation about spring dotenv  : 
+1. Add the dependency to your project:
+```xml
+    <dependency>
+        <groupId>me.paulschwarz</groupId>
+        <artifactId>spring-dotenv</artifactId>
+        <version>{version}</version>
+    </dependency>
+```
+Absolutely! Let's break it down:
+
+---
+
+### 🔹 What is `spring-dotenv`?
+
+`spring-dotenv` is a **third-party library** (not part of Spring Boot itself) that allows your **Spring Boot application to load environment variables from a `.env` file** — just like you would in Node.js, Python, or other frameworks.
+
+GitHub: https://github.com/paulschwarz/spring-dotenv
+
+---
+
+### 🔹 What does it do?
+
+By default, **Spring Boot does NOT read `.env` files**.  
+But with this library, you can create a file like:
+
+**`.env`** (in your project root):
+```env
+DB_URL=jdbc:mysql://localhost:3306/mydb
+DB_USERNAME=root
+DB_PASSWORD=secret123
+JWT_SECRET=my-super-secret-key
+```
+
+Then, in your **`application.properties`** or **`application.yml`**, you can use those values:
+
+```properties
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+app.jwt.secret=${JWT_SECRET}
+```
+
+✅ The `spring-dotenv` library **loads the `.env` file at startup** and makes its variables available as **system/environment properties** — so Spring can resolve `${...}` placeholders.
+
+---
+
+### 🔹 Why would you need it?
+
+#### ✅ Benefits:
+1. **Keep secrets out of code**  
+   → Never hardcode passwords, API keys, or URLs in your source.
+2. **Easy local development**  
+   → Each developer can have their own `.env` without affecting others.
+3. **Consistent with modern dev practices**  
+   → Works like `.env` in React, Django, Express, etc.
+4. **Ignored by Git**  
+   → Add `.env` to `.gitignore` to avoid leaking secrets.
+
+#### 🚫 Without it:
+- You’d have to manually set env vars in your OS/shell:
+  ```bash
+  export DB_PASSWORD=secret123
+  java -jar app.jar
+  ```
+- Or pass them via command line:
+  ```bash
+  java -jar -DDB_PASSWORD=secret123 app.jar
+  ```
+- Or store secrets in `application.properties` → **bad for security!**
+
+---
+ so now  .env is ignored by Git
+ so what if we work with team i need to tell others 
+ what environment variables are required to run the app — without exposing real secrets.
+so to resolve this we add file named .env.example the text type the file 
+and type in it just the keys without values
