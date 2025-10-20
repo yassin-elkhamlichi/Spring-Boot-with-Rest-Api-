@@ -43,7 +43,7 @@ public class AuthController {
             @RequestHeader("Authorization") String token
     ){
         System.out.println("Validate Called with header");
-        var tokenWithoutBearer = token.replace("Bearer","");
+        var tokenWithoutBearer = token.replace("Bearer ","");
                 return jwtService.validateToken(tokenWithoutBearer);
     }
 

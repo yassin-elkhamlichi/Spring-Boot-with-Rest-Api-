@@ -1,5 +1,6 @@
 package com.codewithmosh.store.config;
 
+import com.codewithmosh.store.filter.JwtAuthenticationFilter;
 import com.codewithmosh.store.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,13 +17,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfig {
     public final UserDetailsService userDetailsService;
-
+    public final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -56,11 +58,12 @@ public class SecurityConfig {
                  .authorizeHttpRequests(auth -> auth
                          .requestMatchers("/carts/**").permitAll()
                          .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                         .requestMatchers("/auth/validate").permitAll()
                          .requestMatchers("/auth/login").permitAll()
                          .requestMatchers("/error").permitAll()
                          .anyRequest().authenticated()  // Change back to authenticated
-                 );
-        return http.build();
+                 )
+                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+         return http.build();
     }
 }

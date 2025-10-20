@@ -1821,7 +1821,189 @@ public class LoggingFilter  extends OncePerRequestFilter {
 }
 ```
 and now we see how we can create filter to check the validation : 
+```java
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        var authHeader = request.getHeader("Authorization");
+        if( authHeader == null || !authHeader.startsWith("Bearer")){
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        var token = authHeader.replace("Bearer ", "");
+        if(!jwtService.validateToken(token)){
+            filterChain.doFilter(request, response);
+            return;
+        }
+        var authintication = new UsernamePasswordAuthenticationToken(
+                jwtService.getEmail(token),
+                null,
+                null
+        );
+        authintication.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authintication);
+        filterChain.doFilter(request, response);
+    }
+}
+```
+Absolutely! Let's walk through your `doFilterInternal` method **line by line**, then explain **what it does as a whole**.
 
+---
+
+### 🔍 Full Code with Line-by-Line Explanation
+
+```java
+protected void doFilterInternal(
+    HttpServletRequest request,
+    HttpServletResponse response,
+    FilterChain filterChain
+) throws ServletException, IOException {
+```
+> This is the core method of a Spring Security filter. It runs on **every HTTP request** to check if the user is authenticated (via JWT in this case).
+
+---
+
+```java
+    var authHeader = request.getHeader("Authorization");
+```
+> Gets the value of the `Authorization` header from the incoming HTTP request.  
+> Example: `"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
+
+---
+
+```java
+    if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        filterChain.doFilter(request, response);
+        return;
+    }
+```
+> ✅ **If there’s no `Authorization` header**, or it **doesn’t start with `"Bearer "`**,  
+> → skip authentication (maybe it’s a public endpoint),  
+> → pass the request to the next filter (or controller) using `filterChain.doFilter(...)`,  
+> → and **stop processing** (`return`).
+
+> 🔒 This allows unauthenticated access to public routes (like `/login`, `/register`).
+
+---
+
+```java
+    var token = authHeader.replace("Bearer ", "");
+```
+> Extracts the actual JWT by **removing the `"Bearer "` prefix**.  
+> Now `token` contains only the JWT string: `"eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
+
+---
+
+```java
+    if (!jwtService.validateToken(token)) {
+        filterChain.doFilter(request, response);
+        return;
+    }
+```
+> Asks your `JwtService` to **verify the token**:
+> - Is it signed correctly?
+> - Has it expired?
+> - Is it malformed?
+
+> ❌ If **invalid**, again skip auth and continue (though in practice, you might want to return 401 here — more on that below).  
+> ✅ If **valid**, proceed.
+
+> ⚠️ **Note**: In production, you should usually **reject invalid tokens** with a 401 error instead of silently continuing.
+
+---
+
+```java
+    var authintication = new UsernamePasswordAuthenticationToken(
+        jwtService.getEmail(token),
+        null,
+        null
+    );
+```
+> Creates an **authenticated `Authentication` object**:
+> - **Principal**: the user’s email (extracted from the JWT),
+> - **Credentials**: `null` (because JWT is stateless — no password needed after login),
+> - **Authorities**: `null` (⚠️ this is a problem — see note below).
+
+> This object tells Spring Security: “This user is authenticated.”
+
+> 🔸 **Typo**: variable name should be `authentication`, not `authintication`.
+
+---
+
+```java
+    authintication.setDetails(
+        new WebAuthenticationDetailsSource().buildDetails(request)
+    );
+```
+> Adds extra request details (like client IP, session ID) to the authentication object.  
+> Useful for auditing or security logging.
+
+---
+
+```java
+    SecurityContextHolder.getContext().setAuthentication(authintication);
+```
+> ✅ **This is the key line!**  
+> It **stores the authenticated user** in Spring Security’s context.  
+> Now, anywhere in your app (controllers, services), you can get the current user via:
+> ```java
+> SecurityContextHolder.getContext().getAuthentication().getName();
+> ```
+
+---
+
+```java
+    filterChain.doFilter(request, response);
+```
+> Finally, **passes the request** to the next filter or your controller.  
+> At this point, Spring Security considers the user **authenticated**.
+
+---
+
+```java
+}
+```
+> End of method.
+
+---
+
+### 🧩 What Does This Code Do **Altogether**?
+
+This is a **JWT Authentication Filter** that:
+
+1. **Intercepts every HTTP request**.
+2. **Looks for a `Bearer <token>`** in the `Authorization` header.
+3. If found:
+    - Validates the JWT.
+    - Extracts the user’s email from it.
+    - Creates an `Authentication` object.
+    - Stores it in Spring Security’s context.
+4. If no token (or invalid), it **lets the request continue** — but **unauthenticated**.
+
+✅ After this filter runs, your Spring Boot controllers can:
+- Use `@PreAuthorize("hasRole('USER')")`
+- Access the current user via `SecurityContextHolder`
+- Be protected by Spring Security rules
+
+---
+
+and after we need to add this filter as primary filter in securityconfig
+```java
+ http
+                 .csrf(AbstractHttpConfigurer::disable)
+                 .sessionManagement(session -> session
+                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                 .authorizeHttpRequests(auth -> auth
+                         .requestMatchers("/carts/**").permitAll()
+                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                         .requestMatchers("/auth/validate").permitAll()
+                         .requestMatchers("/auth/login").permitAll()
+                         .requestMatchers("/error").permitAll()
+                         .anyRequest().authenticated()  // Change back to authenticated
+                 )
+                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+```
 
 
