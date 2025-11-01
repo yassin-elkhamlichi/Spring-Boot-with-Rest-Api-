@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-    username: root
-    password: 9999
+    username: ${USER_NAME}
+    password: ${PASSWORD}
   jpa:
     show-sql: true
     hibernate:

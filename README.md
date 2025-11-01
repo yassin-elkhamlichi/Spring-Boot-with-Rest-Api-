@@ -1463,6 +1463,8 @@ user.setPassword(passwordEncoder.encode(user.getPassword()));
 ```
 
 ## 5.2 Authentication Management
+
+![AuthentecationManagement](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/blob/06b0ec93b47bbb25f55a2dc904571d1ce9293d1a/AuthentecationManagement.jpeg)
 I use service to manage authantification but spring security 
 can automatically manage authantification for you
 instead of this : 
