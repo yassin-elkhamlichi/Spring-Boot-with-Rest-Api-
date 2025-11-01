@@ -1704,7 +1704,6 @@ and after we need to use spring dotenv
         <version>{version}</version>
     </dependency>
 ```
-Absolutely! Let's break it down:
 
 ---
 
