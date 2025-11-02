@@ -1,96 +1,116 @@
-# Spring-Boot-Doc-Rest-Api-dev
+# **Spring Boot Documentation – REST API Development**
 
 ---
 
-# 1 Spring Mvc : 
-is part of spring ecosystem.
-is framework for building web applications.
-hundle HTTP request and response. 
-mvc =  model view controller
-model : data + logic
-view : what user see
-controller : java (Middleman) 
+## **1. Spring MVC**
+
+Spring MVC is part of the **Spring ecosystem**.
+It’s a **framework for building web applications** that handles **HTTP requests and responses**.
+
+**MVC = Model, View, Controller**
+
+* **Model:** Data + logic
+* **View:** What the user sees
+* **Controller:** Java class acting as the *middleman*
 
 ---
 
-### 1.1 Controller :
+### **1.1 Controller**
+
 ```java
-@Controller()
+@Controller
 public class HomeController {
-@RequestMapping("/")
-public String index() {
-return "index.html";
-}
+    @RequestMapping("/")
+    public String index() {
+        return "index.html";
+    }
 }
 ```
-when you write @Controller annotation, spring will create bean for this class when you run your code,
-when you write @RequestMapping annotation, spring will know that this method is responsible 
-for handling HTTP request.
 
-### 1.2 tamplate engine :
-!!! to make view dynamic we need use **tamplate engine** :
-A tool  that helps you generate HTML pages dynamically.
-ex : **thymeleaf** , freemarker , velocity , jsp , jstl
-### Thymeleaf :
-so we use **thymeleaf**
-is same thing as jsp but more powerful
-we need to add dependency in pom.xml 
-and after add namespace in html file
+* `@Controller` → tells Spring to create a bean for this class at runtime.
+* `@RequestMapping` → defines which method handles a given HTTP request.
+
+---
+
+### **1.2 Template Engine**
+
+To make views **dynamic**, we need a **template engine** — a tool that generates HTML pages dynamically.
+
+Examples:
+**Thymeleaf**, FreeMarker, Velocity, JSP, JSTL.
+
+#### **Using Thymeleaf**
+
+Thymeleaf is similar to JSP but more powerful.
+
+**Step 1:** Add Thymeleaf dependency in `pom.xml`.
+**Step 2:** Add the namespace in your HTML file:
+
 ```html
 <meta charset="UTF-8" xmlns:th="http://www.thymeleaf.org">
 ```
-and after you can  use the **thymeleaf** attributes 
-for example : 
+
+**Step 3:** Use Thymeleaf attributes:
+
 ```html
-<h1 th:text="'hello '+${name} "></h1>
-``` 
-so you should go to your controller and add name attribute to your model
+<h1 th:text="'Hello ' + ${name}"></h1>
+```
+
+**Step 4:** Pass data to the model in your controller:
+
 ```java
 @Controller
 public class HomeController {
     @RequestMapping("/")
     public String index(Model model) {
-        model.addAttribute("name", "yassine");
+        model.addAttribute("name", "Yassine");
         return "index";
     }
 }
 ```
-make sure you are importing **org.springframework.ui.Model**
----
-### 1.3 Rest API :
-Great question! Let's break it down clearly:
+
+✅ Make sure to import:
+
+```java
+import org.springframework.ui.Model;
+```
 
 ---
 
-## 1.3.1 🔹 What is a **REST API**(Rest ful Api)?
+## **1.3 REST API**
 
-**REST** stands for **Representational State Transfer**.  
-It’s an **architectural style** for designing networked applications — especially web services.
-
-A **REST API** (or RESTful API) is an API that follows REST principles, typically using **HTTP methods** (`GET`, `POST`, `PUT`, `DELETE`, etc.) to perform operations on **resources** (like users, products, orders).
-
-### ✅ Key Characteristics of REST:
-| Principle | Description |
-|--------|-------------|
-| **Stateless** | Each request from a client must contain all info needed. Server doesn’t store session data. |
-| **Resource-based** | Everything is a *resource* (e.g., `/users/123`). |
-| **Use HTTP methods** | `GET` = read, `POST` = create, `PUT/PATCH` = update, `DELETE` = delete. |
-| **Use standard HTTP status codes** | `200 OK`, `201 Created`, `404 Not Found`, `500 Server Error`, etc. |
-| **Returns data (not views)** | Usually in **JSON** or **XML** — not HTML pages. |
-
-> 🌐 Example REST endpoint:  
-> `GET /api/users/5` → returns JSON: `{ "id": 5, "name": "Alice" }`
-> the users named end point is a resource
 ---
 
-## 1.3.2 🔹 What is a **"Normal" API with `@Controller`**?
+### **1.3.1 What is a REST API (RESTful API)?**
 
-In Spring Boot (and Spring MVC), you can create two main types of controllers:
+**REST** = *Representational State Transfer*
+It’s an architectural style for designing web services using **HTTP methods** (`GET`, `POST`, `PUT`, `DELETE`, etc.) to work with **resources** (like users, products, orders).
 
-### 1. **`@Controller`** → Traditional Web Controller
-- Used for **server-rendered web apps** (like returning HTML pages).
-- Methods typically return **view names** (e.g., `"home"`) that map to Thymeleaf/FreeMarker templates.
-- Often used with `Model` to pass data to the view.
+#### **Key Characteristics of REST**
+
+| Principle                      | Description                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| **Stateless**                  | Each request contains all necessary information; no session state stored on the server. |
+| **Resource-based**             | Everything is treated as a *resource* (e.g., `/users/123`).                             |
+| **Uses HTTP methods**          | `GET` = read, `POST` = create, `PUT/PATCH` = update, `DELETE` = delete.                 |
+| **Uses standard status codes** | `200 OK`, `201 Created`, `404 Not Found`, etc.                                          |
+| **Returns data (not views)**   | Usually JSON or XML — not HTML.                                                         |
+
+> Example:
+> `GET /api/users/5` → returns `{ "id": 5, "name": "Alice" }`
+> Here, `/users` is the *resource endpoint*.
+
+---
+
+### **1.3.2 Normal API vs REST API in Spring**
+
+In Spring Boot, you can build two main types of controllers:
+
+#### **1. `@Controller` → Traditional Web Controller**
+
+* Used for **server-rendered web apps** (returns HTML views).
+* Methods return **view names** mapped to templates.
+* Uses `Model` to pass data to the view.
 
 ```java
 @Controller
@@ -102,14 +122,16 @@ public class UserController {
     }
 }
 ```
-> 🖥️ This returns an **HTML page**, not JSON.
+
+> Returns **HTML**, not JSON.
 
 ---
 
-### 2. **`@RestController`** → REST API Controller
-- Specifically designed for **RESTful web services**.
-- Every method **automatically returns data** (e.g., JSON), **not views**.
-- It’s equivalent to `@Controller + @ResponseBody`.
+#### **2. `@RestController` → REST API Controller**
+
+* Designed for **RESTful web services**.
+* Automatically returns **data (JSON)** instead of HTML views.
+* Equivalent to `@Controller + @ResponseBody`.
 
 ```java
 @RestController
@@ -120,174 +142,153 @@ public class UserApiController {
     }
 }
 ```
-> 📡 This returns **JSON data** — perfect for mobile apps, frontend frameworks (React, Angular), or other services.
+
+> Returns **JSON** — ideal for mobile apps, React, Angular, etc.
 
 ---
 
-## ✅ When to Use Which?
+### **✅ When to Use Which**
 
-- Use **`@Controller`** if you’re building a **traditional website** where the server renders HTML (e.g., admin dashboard with Thymeleaf).
-- Use **`@RestController`** if you’re building a **backend API** for a **separate frontend** (React, Angular, mobile app) or for **microservices**.
+| Use Case                                                  | Controller Type   |
+| --------------------------------------------------------- | ----------------- |
+| Building a **website** with HTML views                    | `@Controller`     |
+| Building a **backend API** for frontends or microservices | `@RestController` |
+
+---
+
+### **✅ Summary**
+
+* **REST API:** Data-only API using HTTP methods (returns JSON/XML)
+* **`@RestController`:** Builds REST APIs easily
+* **`@Controller`:** Used for server-rendered HTML pages
 
 ---
 
+### **Note**
 
-## ✅ Summary
-
-> - **REST API** = Data-only API using HTTP methods, returns JSON/XML.
-> - **`@RestController`** = Spring annotation to build REST APIs easily.
-> - **`@Controller`** = For server-rendered web pages (HTML), not APIs.
-
----
-!!! Note :
 ```java
 public List<User> getAllUsers() {
-return userRepository.findAll();
+    return userRepository.findAll();
 }
 ```
-the return type for method is Iterable and this is interface parent of List
-so every list is Iterable but not every Iterable is List
-so we use here Iterable instead of List
 
-### 1.3.3 Postman :
+The return type of `findAll()` is **Iterable**, which is a parent interface of `List`.
+So:
 
-### 🔹 What is **Postman**?
-
-🌐 Browser = Good for quick GET checks.
-🛠️ Postman = Essential for real API development (POST, PUT, auth, testing, teamwork).
-
-**Postman** is a free tool (desktop + web) to **test, build, and document APIs** — especially **REST APIs**.
-
-Think of it as a **"remote control" for your backend**.  
-Instead of using a browser or writing code, you send HTTP requests (GET, POST, etc.) and see the response instantly.
+> Every `List` is an `Iterable`, but not every `Iterable` is a `List`.
+> That’s why `Iterable` works perfectly here.
 
 ---
 
-### 🔹 Why Do You Need It?
+## **1.3.3 Postman**
 
-✅ **Test your API** without a frontend  
-✅ **Debug endpoints** fast (see status code, headers, JSON response)  
-✅ **Send data** (like JSON in POST requests) easily  
-✅ **Save & organize** your requests (great for teams)  
-✅ **Automate tests** (e.g., check if login returns 200 OK)  
-✅ **Document your API** automatically
+### **What is Postman?**
 
-> 🎯 Example:  
-> You built a `/api/users` endpoint in Spring Boot?  
-> Use Postman to **POST** a new user with JSON → see if it works in 10 seconds!
+* 🌐 Browser → good for quick `GET` checks
+* 🛠️ Postman → essential for real API testing (`POST`, `PUT`, `DELETE`, etc.)
+
+**Postman** is a free tool for **testing, building, and documenting REST APIs**.
+
+Think of it as a **remote control for your backend** — you can send requests and see responses instantly.
 
 ---
 
-### 🔹 Basic Use Case
+### **Why Use It?**
 
-1. Open Postman
-2. Choose method: `POST`
-3. Enter URL: `http://localhost:8080/api/users`
-4. Go to **Body → raw → JSON**
-5. Paste:
+✅ Test your API without frontend
+✅ Debug endpoints quickly
+✅ Send JSON data easily
+✅ Save and organize requests
+✅ Automate API tests
+✅ Generate documentation
+
+---
+
+### **Example**
+
+You built `/api/users` in Spring Boot.
+In Postman:
+
+1. Method: `POST`
+2. URL: `http://localhost:8080/api/users`
+3. Body → raw → JSON
+
    ```json
    { "name": "Ali", "email": "ali@example.com" }
    ```
-6. Hit **Send** → See response (201 Created? Error? Data?)
+4. Click **Send** → see response (`201 Created`, etc.)
 
 ---
 
-### 🔹 Who Uses It?
+### **Who Uses Postman?**
 
-- Backend devs (to test their own APIs)
-- Frontend devs (to check how the API works before coding)
-- QA testers (to automate API tests)
-- DevOps (to monitor API health)
-
----
-
-### ✅ Bottom Line
-
-> **Postman = Your API playground.**  
-> No coding needed. Just send requests & see what your server says.
+* Backend developers
+* Frontend developers
+* QA testers
+* DevOps engineers
 
 ---
 
-```java
-@AllArgsConstructor
-@RestController
-public class UserController {
-    private final UserRepository userRepository;
+### **✅ Bottom Line**
 
-    @GetMapping("/users")
-    public Iterable<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-    @GetMapping("/{id}")
-    public Optional<User> getUser(@PathVariable Long id) {
-        return userRepository.findById(id);
-    }
+> **Postman = Your API playground.**
+> Send requests, check responses, no frontend required.
 
-}
-```
-we call users many tames so we try to remove users word and add it in the @RequestMapping
+---
+
+## **Example: User REST Controller**
+
 ```java
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
-  private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @GetMapping
     public Iterable<User> getAllUsers() {
         return userRepository.findAll();
     }
-     @GetMapping("/{id}")
-    public Optional<User> getUser(@PathVariable Long id) {
-        return userRepository.findById(id);
-    }
 
-}
-```
-> @PathVariable is a Spring Framework annotation used in controller methods to extract values from the URI (URL) path.
-
-in this way when i enter for example id not exist in DB 
-the restfull return 200 ok with null
-so we need to hundle this and when user is null return 404 not found
-for do this we need to change type return in  the method
-to ResponseEntity<T>
-```java
-GetMapping("/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
-        var user =  userRepository.findById(id).orElse(null);
-        if (user == null){
+        var user = userRepository.findById(id).orElse(null);
+        if (user == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(user);
     }
+}
 ```
-🔹 What is ResponseEntity?
-ResponseEntity<T> is a Spring class that represents the entire HTTP response — including:
 
-Status code (e.g., 200 OK, 404 Not Found, 500 Internal Server Error)
-Response headers
-Response body (your actual data, like a User object or error message)
-It gives you full control over what your REST endpoint returns.
+> `@PathVariable` extracts a value from the URI path.
+> `ResponseEntity<T>` represents the full HTTP response (status, headers, body),
+> giving you full control over what the endpoint returns.
 
 ---
-### DTO (Data Transfer Object)
 
-### 🔹 What is a DTO?
+# **DTO (Data Transfer Object)**
+
+---
+
+### 🔹 **What is a DTO?**
 
 **DTO = Data Transfer Object**
 
-It’s a **simple Java class** (often called a "POJO" – Plain Old Java Object) that **carries data** between layers of your application (e.g., from controller → service → external API, or database → API response).
+It’s a **simple Java class** (often a *POJO* — Plain Old Java Object) used to **carry data** between layers of your application
+(e.g., from controller → service → API → database).
 
-A DTO:
-- Has **fields** (usually private)
-- Has **getters and setters** (or uses Lombok)
-- **No business logic**
-- **No database annotations** (like `@Entity`)
-- Often **serializable** (to JSON/XML)
+A **DTO**:
+
+* Has **fields** (usually private)
+* Has **getters and setters** (or uses **Lombok**)
+* Contains **no business logic**
+* Has **no database annotations** (like `@Entity`)
+* Is often **serializable** (to JSON/XML)
 
 ---
 
-### 🔹 Example: Without DTO (Problem!)
+### 🔹 **Example: Without DTO (Problem!)**
 
 Imagine you have a JPA `User` entity:
 
@@ -304,7 +305,7 @@ public class User {
 }
 ```
 
-Now, if you return this directly from your REST controller:
+If you return this directly from your REST controller:
 
 ```java
 @GetMapping("/{id}")
@@ -314,29 +315,28 @@ public User getUser(@PathVariable Long id) {
 ```
 
 🚨 **Problems:**
-1. You’re exposing **sensitive data** like `password` and `role` to the client!
-2. You can’t easily **rename fields** (e.g., `createdAt` → `created_at` for JSON).
-3. If you change your database entity, your **API contract breaks**.
-4. You’re tightly coupling your **database model** to your **API model**.
+
+1. You expose **sensitive data** (`password`, `role`) to the client.
+2. You can’t easily **rename fields** (e.g., `createdAt` → `created_at`).
+3. Changing your entity structure can **break your API**.
+4. You’re tightly coupling **database model** and **API model**.
 
 ---
 
-### 🔹 Solution: Use a DTO
+### 🔹 **Solution: Use a DTO**
 
-Create a `UserDto`:
+Create a simple `UserDto`:
 
 ```java
 public class UserDto {
     private Long id;
     private String email;
-    private String createdAt; // formatted as string, e.g., "2024-06-01"
-
-    // Constructors, getters, setters
-    // Or use Lombok: @Data
+    private String createdAt; // formatted as "2024-06-01"
+    // Constructors, getters, setters, or use @Data (Lombok)
 }
 ```
 
-Now map your entity to DTO in the controller:
+Map your entity to DTO inside the controller:
 
 ```java
 @GetMapping("/{id}")
@@ -351,43 +351,47 @@ public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
 ```
 
 ✅ **Benefits:**
-- **No password leaked!**
-- Full control over **what data is exposed**
-- Can **format/transform** data (e.g., dates, enums)
-- API stays stable even if DB changes
+
+* No password leaked!
+* Full control over exposed data
+* Easy to format/transform (dates, enums, etc.)
+* API remains stable even if DB changes
 
 ---
 
-### 🔹 When Should You Use DTOs?
+### 🔹 **When Should You Use DTOs?**
 
 ✅ **Use DTOs when:**
 
-| Scenario | Why |
-|--------|-----|
-| **Exposing data via REST API** | Hide sensitive/internal fields (`password`, `internalId`) |
-| **Receiving data from clients** (e.g., `@RequestBody`) | Validate only what you need; avoid overposting |
-| **Talking to external services** | Match their expected data format |
-| **Returning computed or aggregated data** | e.g., `UserWithOrderCountDto` |
-| **Avoiding lazy-loading issues** | Don’t send Hibernate proxies over the wire! |
-| **Versioning your API** | `UserDtoV1`, `UserDtoV2` |
+| Scenario                                     | Why                                      |
+| -------------------------------------------- | ---------------------------------------- |
+| Exposing data via REST API                   | Hide sensitive fields (`password`, etc.) |
+| Receiving data from clients (`@RequestBody`) | Validate only what’s needed              |
+| Communicating with external APIs             | Match expected formats                   |
+| Returning computed or aggregated data        | e.g., `UserWithOrderCountDto`            |
+| Avoiding lazy-loading issues                 | Prevent Hibernate proxies                |
+| Versioning your API                          | e.g., `UserDtoV1`, `UserDtoV2`           |
 
 ❌ **You might skip DTOs when:**
-- Building a **very simple internal prototype**
-- The entity **exactly matches** what the client needs (rare in real apps)
-- Using **GraphQL** (where clients request only needed fields)
 
-> 💡 **Rule of thumb**: If your API is public or used by frontend/mobile teams — **always use DTOs**.
+* It’s a very **simple prototype**
+* The **entity perfectly matches** client needs (rare)
+* You’re using **GraphQL** (clients choose fields)
+
+> 💡 **Rule:** If your API is public or used by a frontend — **always use DTOs**.
 
 ---
 
-### 🔹 Types of DTOs
+### 🔹 **Types of DTOs**
 
-1. **Response DTO** – for sending data **to client**
+1. **Response DTO** – for sending data **to the client**
+
    ```java
    public class UserResponseDto { ... }
    ```
 
-2. **Request DTO** – for receiving data **from client**
+2. **Request DTO** – for receiving data **from the client**
+
    ```java
    public class CreateUserRequestDto {
        private String email;
@@ -395,173 +399,228 @@ public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
    }
    ```
 
-3. **Internal DTO** – for communication between microservices
+3. **Internal DTO** – for **microservice communication**
 
 ---
 
-> 🛡️ **Think of DTOs as your API’s "public face" — never expose your internal guts directly!**
+> 🛡️ **Think of DTOs as your API’s public face — never expose your internal models directly!**
 
+---
+
+### **Example with Manual Mapping**
 
 ```java
 @GetMapping
-    public Iterable<UserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new UserDto(user.getId(), user.getName(), user.getEmail()))
-                .toList();
-    }
+public Iterable<UserDto> getAllUsers() {
+    return userRepository.findAll()
+            .stream()
+            .map(user -> new UserDto(user.getId(), user.getName(), user.getEmail()))
+            .toList();
+}
+
 @GetMapping("/{id}")
 public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
-    var user =  userRepository.findById(id).orElse(null);
-    if (user == null){
+    var user = userRepository.findById(id).orElse(null);
+    if (user == null) {
         return ResponseEntity.notFound().build();
     }
     var userDto = new UserDto(user.getId(), user.getName(), user.getEmail());
     return ResponseEntity.ok(userDto);
 }
 ```
-this method:
-Fetches all users from DB → List<User>
-Turns it into a stream → Stream<User>
-Converts each User to a safe UserDto → Stream<UserDto>
-Collects results into a list → List<UserDto>
-Returns it as Iterable<UserDto> (valid for Spring REST)
+
+**Explanation:**
+
+1. Fetch all users from DB → `List<User>`
+2. Convert to stream → `Stream<User>`
+3. Map each `User` → `UserDto`
+4. Collect to list → `List<UserDto>`
+5. Return as `Iterable<UserDto>` (valid for Spring REST)
 
 ---
-this method use the manually mapping
-so we need to use auto mapping
-so we choose library for mapping **mapstruct**
-first we need add depandency for this library 
+
+### **Using Auto Mapping with MapStruct**
+
+Instead of manual mapping, you can use **MapStruct** for automatic conversion.
+
+#### **Add Dependencies**
+
 ```xml
- <dependency>
+<dependency>
     <groupId>org.mapstruct</groupId>
     <artifactId>mapstruct</artifactId>
     <version>1.6.2</version>
 </dependency>
+
 <dependency>
-<groupId>org.mapstruct</groupId>
-<artifactId>mapstruct-processor</artifactId>
-<version>1.6.3</version>
+    <groupId>org.mapstruct</groupId>
+    <artifactId>mapstruct-processor</artifactId>
+    <version>1.6.3</version>
 </dependency>
 ```
-and after  we need to create interface for mapping
+
+#### **Create Mapper Interface**
+
 ```java
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserDto toDto(User user);
 }
 ```
-spring automatically create implementation for this interface
-now we can use this interface in our controller
+
+Spring will automatically generate the implementation for this interface.
+
+#### **Use in Controller**
+
 ```java
-   @GetMapping
-    public Iterable<UserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
+@GetMapping
+public Iterable<UserDto> getAllUsers() {
+    return userRepository.findAll()
+            .stream()
+            .map(userMapper::toDto)
+            .toList();
+}
+
+@GetMapping("/{id}")
+public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+    var user = userRepository.findById(id).orElse(null);
+    if (user == null) {
+        return ResponseEntity.notFound().build();
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
-        var user =  userRepository.findById(id).orElse(null);
-        if (user == null){
-            return ResponseEntity.notFound().build();
-        }
-       return ResponseEntity.ok(userMapper.toDto(user));
-    }
+    return ResponseEntity.ok(userMapper.toDto(user));
+}
 ```
+
 ---
- java object  --> json named **serialization**
- json --> java object named **deserialization**
- **Customizing Response** :
- we have many annotation for controll json like :
- @JsonIgnoreProperties(ignoreUnknown = true)
- @JsonInclude(JsonInclude.Include.NON_NULL)
- @JsonProperty("name")
- @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") 
- for example here :
-```jav
+
+### **Serialization vs Deserialization**
+
+* **Java → JSON** → *Serialization*
+* **JSON → Java** → *Deserialization*
+
+---
+
+### **Customizing JSON Response**
+
+We can control JSON output using annotations such as:
+
+| Annotation                                    | Purpose                    |
+| --------------------------------------------- | -------------------------- |
+| `@JsonIgnoreProperties(ignoreUnknown = true)` | Ignore unknown JSON fields |
+| `@JsonInclude(JsonInclude.Include.NON_NULL)`  | Exclude `null` fields      |
+| `@JsonProperty("name")`                       | Rename fields in JSON      |
+| `@JsonFormat`                                 | Format dates/times         |
+
+#### Example
+
+```java
 public class UserDto {
- private Long id;
- private String name;
- private String email;
- }
-``` 
-we cant remove id field from json because we need it for update user
-but we can ignore it using @JsonIgnore
+    private Long id;
+    private String name;
+    private String email;
+}
+```
+
+We might want to hide or rename some fields:
+
 ```java
 public class UserDto {
     @JsonIgnore
-    private Long id;
+    private Long id; // Hide ID in JSON output
 }
 ```
-we also have jsonproperty annotation for change name of field in json
+
 ```java
 public class UserDto {
-@JsonProperty("full_name")
-    private String name;
-}
-```
-also we can use @JsonInnclude annotation for ignore null fields
-```java
-   public class UserDto {
     @JsonProperty("full_name")
     private String name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String email;
-} 
+}
 ```
-also we have @JsonFormat annotation for change date format
+
 ```java
 public class UserDto {
-@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-private Date createdAt;
+    @JsonProperty("full_name")
+    private String name;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String email;
+}
+```
+
+Format date fields:
+
+```java
+public class UserDto {
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date createdAt;
 }
 ```
 
 ---
-### Extracting Query Parameters :
-```java
- @GetMapping
-    public Iterable<UserDto> getAllUsers(
-            @RequestParam(required = false,  defaultValue = "" , name = "sort") String sortBy) {
-        if(!Set.of("email","name").contains(sortBy))
-            sortBy = "name";
-        return userRepository.findAll(Sort.by(sortBy))
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
-    }
 
-```
-this method use query parameter to sort users by email or name
--> the parametre required is tell teh url is sort is required or not
-so you can use this url :
-http://localhost:8080/users?sort=email
-or just
-http://localhost:8080/users
--> the parametre default value is tell the default value of sort parameter
--> the parametre name is tell the name of sort parameter
-if you change sortBy to another word the url still work becouse you declared name = "sort"
+✅ **Summary**
+
+* DTOs separate **API models** from **database models**.
+* Prevent **data leaks** and **tight coupling**.
+* **MapStruct** simplifies conversion between objects.
+* Jackson annotations (`@JsonIgnore`, `@JsonInclude`, etc.) help customize JSON responses.
 
 ---
-### what i learn in exercice :
+
+## Extracting Query Parameters
+
+```java
+@GetMapping
+public Iterable<UserDto> getAllUsers(
+        @RequestParam(required = false, defaultValue = "", name = "sort") String sortBy) {
+    if (!Set.of("email", "name").contains(sortBy))
+        sortBy = "name";
+    return userRepository.findAll(Sort.by(sortBy))
+            .stream()
+            .map(userMapper::toDto)
+            .toList();
+}
+```
+
+This method uses a query parameter to sort users by **email** or **name**.
+
+* The parameter `required` tells if the URL parameter `sort` is required or not.
+* Example URLs:
+
+    * `http://localhost:8080/users?sort=email`
+    * `http://localhost:8080/users`
+* The parameter `defaultValue` defines the default value for the sort parameter.
+* The parameter `name` specifies the query parameter name.
+
+  > If you rename `sortBy` to another word, the URL still works because `name = "sort"` is declared.
+
+---
+
+## What I Learned in This Exercise
+
 ```java
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @EntityGraph(attributePaths = {"category"})
     public List<Product> findByCategory_id(Byte categoryId);
 }
 
-###########
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
-    @Mapping(target = "categoryId" , source = "category.id" )
+    @Mapping(target = "categoryId", source = "category.id")
     public ProductDto toDto(Product product);
 }
 ```
-when you have rolation manytoone you can use @Mapping(target = "categoryId" , source = "category.id" )
-this dont get category object , but get the id from gategory
-and in Dto you should write this :
+
+When you have a **many-to-one** relation, you can use:
+
+```java
+@Mapping(target = "categoryId", source = "category.id")
+```
+
+This doesn’t fetch the full category object — it only gets the **category ID**.
+
+In your DTO:
+
 ```java
 @AllArgsConstructor
 @Getter
@@ -574,31 +633,40 @@ public class ProductDto {
     private Byte categoryId;
 }
 ```
+
 ---
 
-### Extracting Request Headers :
+## Extracting Request Headers
+
 ```java
 public List<ProductDto> getAllProducts(
-@RequestHeader(required = false , name("X-API-KEY") String apiKey )
-@RequestParam(required = false) Byte categoryId) {
+    @RequestHeader(required = false, name = "X-API-KEY") String apiKey,
+    @RequestParam(required = false) Byte categoryId) {
 }
 ```
-this annotation is about req Header help us to extract request header and use it in our method
-### Extracting Request body :
-you can in the postman use body to test create ressources like user 
-but not create ressource in bd 
-if you want to create ressource in bd you need to use post method
+
+`@RequestHeader` extracts a request header and makes it usable inside the method.
+
+---
+
+## Extracting Request Body
+
+You can use **Body** in Postman to test creating resources like a user —
+but if you want to actually create one in the DB, you must use **POST**.
+
 ```java
- @PostMapping
-    public UserDto createUser(@RequestBody RegisterUserRequest data) {
-        var user = userMapper.toEntity(data);
-        userRepository.save(user);
-        var userDto = userMapper.toDto(user);
-        return userDto;
-    }
+@PostMapping
+public UserDto createUser(@RequestBody RegisterUserRequest data) {
+    var user = userMapper.toEntity(data);
+    userRepository.save(user);
+    var userDto = userMapper.toDto(user);
+    return userDto;
+}
 ```
-why we add RegisterUserRequest not userDTO ? becouse in dto we dont have 
-password field so we need add new class in the DTO specific for create user
+
+Why use `RegisterUserRequest` instead of `UserDto`?
+Because in the DTO we don’t have the password field, so we create a new class:
+
 ```java
 @Data
 public class RegisterUserRequest {
@@ -607,310 +675,337 @@ public class RegisterUserRequest {
     private String password;
 }
 ```
-and you should add new method in mapper :
+
+In the mapper:
+
 ```java
 User toEntity(RegisterUserRequest registerUserRequest);
 ```
-this get registerUserRequest and return user 
-and save user in the bd
-and after we call the toDto method for get userDTO
-and after we fetch it in the postman
--> now we try to update User in bd based postman
-first in postman you should choose 
-Put or patch as request method
-and after you should add methode in the controller like this 
-```java
- @PutMapping("/{id}")
-    public  ResponseEntity updateUser(
-        @PathVariable(name = "id") Long id, 
-        @RequestBody UpdateUserDto data // this  is the data from postman in the request body
-    ){
-        var user = userRepository.findById(id).orElse(null);
-        if(user == null){
-            return ResponseEntity.notFound().build(); // return 404 in postman if user dosn't exist
-        }
-        userMapper.update(data,user); // update user with data from postman
-        userRepository.save(user);
-        return ResponseEntity.ok(userMapper.toDto(user));
 
+---
+
+## Updating a User (PUT / PATCH)
+
+In Postman, choose **PUT** or **PATCH**, then add this method:
+
+```java
+@PutMapping("/{id}")
+public ResponseEntity updateUser(
+    @PathVariable(name = "id") Long id,
+    @RequestBody UpdateUserDto data
+) {
+    var user = userRepository.findById(id).orElse(null);
+    if (user == null) {
+        return ResponseEntity.notFound().build();
     }
+    userMapper.update(data, user);
+    userRepository.save(user);
+    return ResponseEntity.ok(userMapper.toDto(user));
+}
 ```
-and after you should add new method in mapper like this :
+
+Add this in the mapper:
+
 ```java
-void update(UpdateUserDto updateUserDto,@MappingTarget User user);
+void update(UpdateUserDto updateUserDto, @MappingTarget User user);
 ```
 
-so this method update user with data from postman mapstruct generate automaticlly this 
-method for you
+MapStruct auto-generates this method.
 
-🧠 How MapStruct “knows” what to do
-1. Method Name Matters — But Not Alone
-   MapStruct doesn’t just look at the name — it looks at:
+🧠 **How MapStruct knows what to do**
 
-✅ Method name (e.g., update, toDto)
-✅ Parameter types
-✅ Return type
-✅ Annotations like @MappingTarget
-dont forget create UpdateUserDto for choose wish field you want to update
--> if you want delete user you should add this method in controller :
+1. **Method name**
+2. **Parameter types**
+3. **Return type**
+4. **Annotations like `@MappingTarget`**
+
+Don’t forget to create `UpdateUserDto` to define which fields to update.
+
+---
+
+## Deleting a User
+
 ```java
 @DeleteMapping("/{id}")
-public ResponseEntity deleteUser(
-@PathVariable(name = "id") Long id
-){
-var user = userRepository.findById(id).orElse(null);
-if(user == null){
-return ResponseEntity.notFound().build();
-}
-userRepository.delete(user);
-return ResponseEntity.noContent().build();
-}
-```
----
-🔹 What is ResponseEntity?
-ResponseEntity<T> is a generic class in Spring that represents the entire HTTP response — not just the body, but also:
-
-✅ Status code (e.g., 200 OK, 404 Not Found, 500 Internal Server Error)
-✅ Headers (e.g., Content-Type, Location, custom headers)
-✅ Response body (your actual data, like JSON, XML, etc.)
-It gives you full control over what your REST endpoint returns.
----
-### Action_based updates :
-we use Put and Patch for update resources but 
-some updates represent an "action"
-like changing password , submit approval request 
-so better use a Post request for this case
-we try to update password so we go to controller and write this :
-```java
-@PostMapping("/{id}/Change_password")
-    public ResponseEntity changePassword(
-            @PathVariable(name = "id") Long id,
-            @RequestBody ChangePasswordReqeust data
-    ){
-        var user = userRepository.findById(id).orElse(null);
-        if(user == null){
-            return ResponseEntity.notFound().build();
-        }
-        if(!user.getPassword().equals(data.getOldPassword())){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            // help us to know what is the error here when i use Unautauthorized
-            //that mean that the old password is not correct
-        }
-        user.setPassword(data.getNewPassword());
-        userRepository.save(user);
-        return ResponseEntity.ok().build();
+public ResponseEntity deleteUser(@PathVariable(name = "id") Long id) {
+    var user = userRepository.findById(id).orElse(null);
+    if (user == null) {
+        return ResponseEntity.notFound().build();
     }
+    userRepository.delete(user);
+    return ResponseEntity.noContent().build();
+}
 ```
-and create new class in dto 
+
+---
+
+## 🔹 What is ResponseEntity?
+
+`ResponseEntity<T>` represents the entire HTTP response:
+
+* ✅ Status code (e.g., 200 OK, 404 Not Found)
+* ✅ Headers
+* ✅ Response body (your JSON/XML/etc.)
+
+It gives full control over the REST response.
+
+---
+
+## Action-Based Updates
+
+We use **PUT** and **PATCH** for updates, but some updates represent an **action**,
+like *changing a password* or *submitting an approval request*.
+In such cases, it’s better to use **POST**.
+
+Example:
+
+```java
+@PostMapping("/{id}/change_password")
+public ResponseEntity changePassword(
+        @PathVariable(name = "id") Long id,
+        @RequestBody ChangePasswordRequest data
+) {
+    var user = userRepository.findById(id).orElse(null);
+    if (user == null) {
+        return ResponseEntity.notFound().build();
+    }
+    if (!user.getPassword().equals(data.getOldPassword())) {
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+    user.setPassword(data.getNewPassword());
+    userRepository.save(user);
+    return ResponseEntity.ok().build();
+}
+```
+
+DTO:
+
 ```java
 @Data
-public class ChangePasswordReqeust {
+public class ChangePasswordRequest {
     private String oldPassword;
     private String newPassword;
 }
 ```
+
 ---
--> i work on Product and in update exist same different
+
+## Updating Product Example
+
 ```java
 @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(
-            @PathVariable Long id,
-            @RequestBody ProductDto data
-    ){
-        var product = productRepository.findById(id).orElse(null);
-
-        productMapper.update(data,product);
-        var category = categoryRepository.findById(data.getCategoryId()).orElse(null);
-        if(product == null || category == null){
-            return ResponseEntity.notFound().build();
-        }
-        product.setCategory(category);
-        productRepository.save(product);
-        return  ResponseEntity.ok(productMapper.toDto(product));
+public ResponseEntity<ProductDto> updateProduct(
+        @PathVariable Long id,
+        @RequestBody ProductDto data
+) {
+    var product = productRepository.findById(id).orElse(null);
+    productMapper.update(data, product);
+    var category = categoryRepository.findById(data.getCategoryId()).orElse(null);
+    if (product == null || category == null) {
+        return ResponseEntity.notFound().build();
     }
+    product.setCategory(category);
+    productRepository.save(product);
+    return ResponseEntity.ok(productMapper.toDto(product));
+}
 ```
-why the different happen?
-becouse in user we RegisterUserDto class and this class  have password field
-and not include id so here when i call class have id 
-the implemantion for update method in mapper class 
-Do change also for id field but for user do just for 2 fields email and 
-password so for resolve this problem you should add this annotation :
+
+### Why the difference?
+
+Because in `User`, `RegisterUserDto` has no `id` field,
+but `ProductDto` **does** include it — so MapStruct updates it too.
+
+To fix this:
+
 ```java
 @Mapping(target = "id", ignore = true)
-void update(ProductDto productDto ,@MappingTarget Product product);
+void update(ProductDto productDto, @MappingTarget Product product);
 ```
-this tell mapstruct to ignore id field when implement 
-the update method from interface ProductMapper
+
+This tells MapStruct to **ignore the ID field** when updating.
+
 ---
-# 4 Validation :
-## 4.1 Jakarta validation :
-instead of check fields manually we can use jakarta validation
-for check for example if field emty or null or is string  ...
-**String Validation**
+
+# 4. Validation
+
+## 4.1 Jakarta Validation
+
+Instead of manually checking fields, use **Jakarta Validation** to validate automatically.
+
+### String Validation
+
 ```java
 @NotBlank
 private String name;
+
 @NotEmpty
 private String description;
+
 @Size(min = 1, max = 5)
 private String code;
+
 @Email
 private String email;
+
 @Pattern(regexp = "^\\d{10}$")
 private String phone;
 ```
-@Not blank mean that field can not be null or empty
 
-**Number Validation**
+### Number Validation
+
 ```java
 @Min(value = 0)
 @Max(value = 100)
 private int age;
+
 @Positive
 @PositiveOrZero
 @Negative
 @NegativeOrZero
 ```
-**Date  Validation**
+
+### Date Validation
+
 ```java
 @Past
 @PastOrPresent
 @Future
 @FutureOrPresent
 private Date birthDate;
+
 @DateTimeFormat(pattern = "yyyy-MM-dd")
 ```
-**General validation**
+
+### General Validation
+
 ```java
 @NotNull
 ```
-!!! to use jakarta validation you should add this dependency in pom.xml
-write in the search validation and you see this :
+
+---
+
+### Add Dependency
+
+In `pom.xml`:
+
 ```xml
-  <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
 ```
-example : 
+
+---
+
+### Example
+
 ```java
 @Data
 public class RegisterUserRequest {
     @NotBlank(message = "Name is required")
     @Max(value = 50, message = "Name must be less than 50 characters")
     private String name;
+
     @Email(message = "Email is invalid")
     private String email;
+
     @NotBlank(message = "Password is required")
-    @Size( min= 6,max = 12, message = "Password must be bettwen 6 and 12 characters")
+    @Size(min = 6, max = 12, message = "Password must be between 6 and 12 characters")
     private String password;
 }
 ```
-after useing this annotation you should go to the method use this class and add
-@Valid annotation like this :
+
+Use `@Valid` in your controller:
+
 ```java
 @PostMapping
-    public UserDto createUser(
-            @Valid @RequestBody RegisterUserRequest data) {
-                .....
-    }
-```
-if some validation error happen you will see error in postman 
-but without meessage error so if you want 
-see what exactly error happen you should add this method in the same controller  :
-```java
-@ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,String>> HundleValidationErrors(
-            MethodArgumentNotValidException exception
-    ){
-        var errors = new HashMap<String,String>();
-        exception.getBindingResult().getFieldErrors().forEach(
-                error -> {
-                    errors.put(error.getField(), error.getDefaultMessage());
-                });
-        return ResponseEntity.badRequest().body(errors);
-    }
-```
-you dont call this method in create method becouse this 
-method will call automatucly  when validation error happen
----
-
----
-
-### 🔁 Step-by-step For how this hundle errors worked
-
-#### 1. **Incoming HTTP POST Request**
-A client sends a POST request to your endpoint with a JSON body, e.g.:
-```json
-{
-  "name": "",
-  "email": "not-an-email",
-  "password": "123"
+public UserDto createUser(@Valid @RequestBody RegisterUserRequest data) {
+    ...
 }
 ```
 
-#### 2. **Spring Maps JSON → `RegisterUserRequest`**
-Spring’s `HttpMessageConverter` (like Jackson) deserializes the JSON into an instance of `RegisterUserRequest`.
-
-At this point, the object exists in memory, but **no validation has happened yet**.
-
-#### 3. **`@Valid` Triggers Validation**
-Because your method parameter is annotated with:
-```java
-@Valid @RequestBody RegisterUserRequest data
-```
-Spring sees `@Valid` and **automatically triggers Jakarta Bean Validation** on the `data` object **before** your method body executes.
-
-> 💡 **Key point**: `@Valid` is the signal that tells Spring: *"Validate this object using the constraints declared on its fields."*
-
-#### 4. **Validation Engine Checks Constraints**
-The validation engine (usually Hibernate Validator, the reference implementation of Jakarta Validation) inspects your `RegisterUserRequest` class:
+If validation fails, Postman will show an error —
+but to display messages, add this method:
 
 ```java
-@NotBlank(message = "Name is required")
-@Max(value = 50, message = "Name must be less than 50 characters")
-private String name;
-
-@Email(message = "Email is invalid")
-private String email;
-
-@NotBlank(message = "Password is required")
-@Size(min = 6, max = 12, message = "Password must be between 6 and 12 characters")
-private String password;
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<Map<String, String>> handleValidationErrors(
+        MethodArgumentNotValidException exception
+) {
+    var errors = new HashMap<String, String>();
+    exception.getBindingResult().getFieldErrors().forEach(
+            error -> errors.put(error.getField(), error.getDefaultMessage())
+    );
+    return ResponseEntity.badRequest().body(errors);
+}
 ```
 
-It checks each field:
-- `name` is blank → violates `@NotBlank`
-- `email` is not a valid email → violates `@Email`
-- `password` is only 3 chars → violates `@Size(min=6)`
+This is automatically called when validation fails.
 
-So **3 constraint violations** are found.
+---
 
-#### 5. **Validation Fails → Throws `MethodArgumentNotValidException`**
+## 🔁 How This Error Handling Works
+
+1. **Incoming HTTP POST Request**
+
+   ```json
+   {
+     "name": "",
+     "email": "not-an-email",
+     "password": "123"
+   }
+   ```
+
+2. **Spring Maps JSON → `RegisterUserRequest`**
+   The object is created, but validation hasn’t run yet.
+
+3. **`@Valid` Triggers Validation**
+   Spring validates before executing the method.
+
+4. **Validation Engine Checks Constraints**
+
+    * `@NotBlank` → fails
+    * `@Email` → fails
+    * `@Size(min=6)` → fails
+
+✅ **Result:** 3 constraint violations found.
+
+---
+
+## 5. Validation Fails → Throws `MethodArgumentNotValidException`
+
 Since validation failed, **Spring does NOT call your `createUser` method body**.
 
 Instead, it **throws a `MethodArgumentNotValidException`**, which is a built-in Spring exception that wraps:
-- The invalid object (`RegisterUserRequest`)
-- The `BindingResult` containing all validation errors
+
+* The invalid object (`RegisterUserRequest`)
+* The `BindingResult` containing all validation errors
 
 > 🚫 Your `userRepository.save(user);` line **never runs** if validation fails.
 
-#### 6. **Spring Looks for an Exception Handler**
+---
+
+### 6. Spring Looks for an Exception Handler
+
 Spring now searches for a method that can handle `MethodArgumentNotValidException`.
 
 It finds your method:
+
 ```java
 @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<Map<String,String>> handleValidationErrors(...) { ... }
 ```
 
 > ✅ This works because:
-> - It's in the same controller (`@Controller` or `@RestController`)
-> - Or in a `@ControllerAdvice` class (global handler)
-> - And it declares the correct exception type
+>
+> * It's in the same controller (`@Controller` or `@RestController`)
+> * Or in a `@ControllerAdvice` class (global handler)
+> * And it declares the correct exception type
 
-#### 7. **Your Handler Extracts Error Messages**
-Inside your handler:
+---
+
+### 7. Your Handler Extracts Error Messages
+
 ```java
 exception.getBindingResult().getFieldErrors().forEach(
     error -> {
@@ -918,16 +1013,19 @@ exception.getBindingResult().getFieldErrors().forEach(
     });
 ```
 
-- `getFieldErrors()` returns a list of `FieldError` objects.
-- For each error:
-    - `error.getField()` → e.g., `"name"`, `"email"`, `"password"`
-    - `error.getDefaultMessage()` → the **exact message you wrote** in your annotations:
-        - `"Name is required"`
-        - `"Email is invalid"`
-        - `"Password must be between 6 and 12 characters"`
+* `getFieldErrors()` returns a list of `FieldError` objects.
+* For each error:
+
+    * `error.getField()` → e.g., `"name"`, `"email"`, `"password"`
+    * `error.getDefaultMessage()` → your custom message:
+
+        * `"Name is required"`
+        * `"Email is invalid"`
+        * `"Password must be between 6 and 12 characters"`
 
 So your `errors` map becomes:
-```java
+
+```json
 {
   "name": "Name is required",
   "email": "Email is invalid",
@@ -935,13 +1033,16 @@ So your `errors` map becomes:
 }
 ```
 
-#### 8. **Response Sent to Client**
-You return:
+---
+
+### 8. Response Sent to Client
+
 ```java
 return ResponseEntity.badRequest().body(errors);
 ```
 
-So the client gets a **400 Bad Request** with JSON body:
+The client gets a **400 Bad Request** with this JSON:
+
 ```json
 {
   "name": "Name is required",
@@ -954,24 +1055,29 @@ So the client gets a **400 Bad Request** with JSON body:
 
 ### ✅ Summary: The Chain of Events
 
-| Step | What Happens |
-|------|--------------|
-| 1 | Request arrives with invalid JSON |
-| 2 | Spring deserializes JSON → `RegisterUserRequest` |
-| 3 | Sees `@Valid` → runs Jakarta Validation |
-| 4 | Validator checks your annotations (`@NotBlank`, `@Email`, etc.) |
-| 5 | Violations found → throws `MethodArgumentNotValidException` |
-| 6 | Spring catches it and looks for `@ExceptionHandler` |
-| 7 | Your handler extracts **your custom messages** from the DTO |
-| 8 | Returns 400 + error map to client |
+| Step | What Happens                                                    |
+| ---- | --------------------------------------------------------------- |
+| 1    | Request arrives with invalid JSON                               |
+| 2    | Spring deserializes JSON → `RegisterUserRequest`                |
+| 3    | Sees `@Valid` → runs Jakarta Validation                         |
+| 4    | Validator checks your annotations (`@NotBlank`, `@Email`, etc.) |
+| 5    | Violations found → throws `MethodArgumentNotValidException`     |
+| 6    | Spring catches it and looks for `@ExceptionHandler`             |
+| 7    | Your handler extracts **your custom messages**                  |
+| 8    | Returns 400 + error map to client                               |
 
 ---
-!!!!!! Problem : 
-if i want do this in another controller i should repeat the same logic in all the
-controllers !!!!!!!!
-**Global Error Handling**
-the idea instead write the same logic in many classes
-we write it in one class
+
+## Problem
+
+If you want to do this in another controller, you would have to **repeat the same logic** in all controllers ❌
+
+---
+
+## Global Error Handling
+
+To avoid repetition, use a global handler:
+
 ```java
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -988,685 +1094,765 @@ public class GlobalExceptionHandler {
     }
 }
 ```
-somthing we need more control for the validation 
-so you can create some annotation 
-### 4.2 Implementing Custom Validation
-First you should create new package named validation
-and in this package you should create new annotation name the name you want to write it in 
-the dto class 
-in my example we named it LowerCase 
+
+---
+
+Sometimes we need more control for the validation,
+so we can create **custom annotations**.
+
+---
+
+## 4.2 Implementing Custom Validation
+
+1. Create a new package named `validation`.
+2. Create a new annotation — e.g., `@LowerCase`.
+
 ```java
-@Target(ElementType.FIELD) // this annotation will be used in field because you are choosing field
-@Retention(RetentionPolicy.RUNTIME) // here you choose when this annotation work
-@Constraint(validatedBy =  LowerCaseValidator.class) // this annotation will choose the class content logic validation
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = LowerCaseValidator.class)
 public @interface LowerCase {
     String message() default "Must be lowercase";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
 ```
-and after you should  create new class named LowerCaseValidator
+
+Then create a validator class:
+
 ```java
 public class LowerCaseValidator implements ConstraintValidator<LowerCase, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
-        if(value == null) return true;
-        return s.equals(s.toLowerCase());
+        if (value == null) return true;
+        return value.equals(value.toLowerCase());
     }
 }
 ```
-<LowerCase, String> the first is annotation you create and 
-String is the type the field you applied this annotation
----
-### Validating Business Rules :
-if we want to check if email unique we need to use business rules
-```java
-    @PostMapping
-    public ResponseEntity<?> registerUserRequest(
-            @Valid @RequestBody RegisterUserRequest data
-    ) {
 
-        if(userRepository.existsByEmail(data.getEmail()))
-            return ResponseEntity.badRequest().body(
-                    Map.of("email","Email already exists"));
-        var user = userMapper.toEntity(data);
-        userRepository.save(user);
-        return ResponseEntity.ok(userMapper.toDto(user));
-    }
-```
-this check if email unique or no .
-why we dont use custom  annotation :
-becouse we need enter in the method and check if email unique or no
-but when you use the validation jakarta tou dont enter the method and jakarata check it before
-enter the method 
+> `<LowerCase, String>` → first is your custom annotation, second is the field type.
+
 ---
-### Romarque in Exercice :
-somthing when you add entitie for example named Cart even if you wrote
-@Table(name = "Cart") hibernete will searche on table named cart
-so for resolve this problem you should add this line in 
-yaml file 
+
+## Validating Business Rules
+
+To check if email is unique (business rule):
+
+```java
+@PostMapping
+public ResponseEntity<?> registerUserRequest(
+        @Valid @RequestBody RegisterUserRequest data
+) {
+    if (userRepository.existsByEmail(data.getEmail()))
+        return ResponseEntity.badRequest().body(
+                Map.of("email", "Email already exists"));
+    var user = userMapper.toEntity(data);
+    userRepository.save(user);
+    return ResponseEntity.ok(userMapper.toDto(user));
+}
+```
+
+> ❗We don’t use a custom annotation here because we need to **enter the method** and query the DB.
+> Jakarta validation runs **before entering** the method.
+
+---
+
+## Remark in Exercise
+
+Sometimes when you add an entity (e.g. `Cart`),
+even with `@Table(name = "Cart")`, Hibernate looks for a lowercase table name.
+
+To fix this, add in your `application.yaml`:
+
 ```yaml
-  jpa:
-    show-sql: true // just for see  the sql in your console
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-          // this tell hibernete  to use this naming strategy exact with dont  change the name
-```
-
-For store id type uuid to string in db yiou should add this 
-in your entity
-```java
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "id" , columnDefinition = "CHAR(36)")
-    private UUID  id;
+jpa:
+  show-sql: true # to show SQL in console
+  hibernate:
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 ```
 
 ---
-if you want to get value to fielad in the dto you can write this
-```java
-    @Mapping(target = "totalPrice", expression = "java(itemCart.getTotalPrice())")
-    ItemCartDto toDto(ItemCart itemCart);
-```
-java(itemCart.getTotalPrice()) this call the methode and save return in totalPrice
-```java
-    @Mapping(target = "product", expression = "java(itemCart.getProduct() != null ? toDto(itemCart.getProduct()) : null)")
-    ItemCartDto toDto(ItemCart itemCart);
-    CartProductDto toDto(Product product);
-```
-when dto include another dto you should tell mapstruct what should do
-for example in my case i have itemCartDto include productDto
-so i should add new method to convert product to productDto
-and call it mapping in itemCartDto
 
-**When you try to convert toDto or toEntity** map struct change just the field has
-same name if you have field with different name you should add mapping :
-```aiignore
+### Store UUID as String in DB
+
+In your entity:
+
+```java
+@JdbcTypeCode(SqlTypes.CHAR)
+@Column(name = "id", columnDefinition = "CHAR(36)")
+private UUID id;
+```
+
+---
+
+### Get Field Value in DTO
+
+```java
+@Mapping(target = "totalPrice", expression = "java(itemCart.getTotalPrice())")
+ItemCartDto toDto(ItemCart itemCart);
+```
+
+> `java(itemCart.getTotalPrice())` → calls the method and sets result to `totalPrice`.
+
+Example with nested DTO:
+
+```java
+@Mapping(target = "product", expression = "java(itemCart.getProduct() != null ? toDto(itemCart.getProduct()) : null)")
+ItemCartDto toDto(ItemCart itemCart);
+CartProductDto toDto(Product product);
+```
+
+If a DTO includes another DTO, tell MapStruct how to map it.
+
+---
+
+### Different Field Names
+
+If field names differ:
+
+```java
 @Mapping(target = "productId", source = "id")
 ```
-target for the object you return and source for the object you want to convert
 
--> when i want to get cart i should tell mapstruct items in cartDto is itemCart in cart
-and tell mapstruct to calcul total price based on method i write it in my class cart 
-this method is this : 
-```java
- public BigDecimal getTotalPrice() {
-        return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-```
-first we get each itemCart and get total price and after we sum them
+> `target` = returned object
+> `source` = original object
 
--> everything is good but we have little problem rolated with the number the query send 
-so to make just send one queryto get all carts and all items in carts
-we do this go to CartRepository and add this 
-```java
-    @EntityGraph(attributePaths = "itemCart.product")
-    @Query("select c from Cart c where c.id = :cartId ")
-    Optional<Cart> getCartWithItemsAndProducts(@Param("cartId") UUID cartId);
-```
-the first line tell spring to get all items in carts and all products in carts 
-and the second is the qeury to get cart
+---
 
-### Information expert principle : 
-when you write a code in controle and 
-and repeat same logic in many methods in the same 
-controller you should to respect this princiiple
-so you should move this logic to service
-or to Expert class (in my case Cart is expert on ItemCart)
-so the method calcul Total price for all ietms should be
-exist in the cart class
-and if you want to get just one ItemCart by id 
-you can add this method in Cart class and call it when you need without 
-repeat the same logic in controller or in any other place
+### Calculate Total Price
+
+In your `Cart` class:
+
 ```java
-public ItemCart getItemCart(Long Product) {
-    retrun   itemCart.stream()
-            .filter(item -> item.getProduct().getId().equals(Product)).
-            findFirst().
-            orElse(null);
+public BigDecimal getTotalPrice() {
+    return itemCart.stream()
+        .map(ItemCart::getTotalPrice)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
 }
 ```
-### Anemic Domain :
-summery is principe tell : classes that only have data 
-so that mean "information expert principle " should wrote in service rolated with expert class
 
-### Rich Domain :
-summery is principe tell : classes that  have data and behavior :
-Data = State/Properties
-id, items, status, total
+---
 
-product, quantity, price
+### Optimize Queries with `@EntityGraph`
 
-Behavior = Business Logic/Methods
-addItem(), completeOrder(), calculateTotal()
+In `CartRepository`:
 
-Validation rules, business rules, calculations
-
-State transitions, invariants
-
-!!!!! the controller most content just req and res so to clean controller 
-we should add the logic in service 
-but what about ResponseEntity?
-easy just create new package for exception 
-this code before use service and exception :
 ```java
- @PostMapping("/{id}/item")
-    public ResponseEntity<ItemCartDto> addToCart(
-            @PathVariable UUID  id,
-            @RequestBody AddItemToCartReqeustDto data
-            ) {
-        var cart = cartRepository.findById(id).orElse(null);
-        var product = productRepository.findById(productId).orElse(null);
-        if (cart == null)
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    Map.of("error" , "Cart not found")
-            );
-        if (product == null)
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    Map.of("error" , "Product not found")
-            );
-        var itemCart = cart.addItemCart(product);
-        cartRepository.save(cart);
-        var cartItemCartDto = cartMapper.toDto(itemCart);
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
-    }
+@EntityGraph(attributePaths = "itemCart.product")
+@Query("select c from Cart c where c.id = :cartId")
+Optional<Cart> getCartWithItemsAndProducts(@Param("cartId") UUID cartId);
 ```
-and after : 
+
+> This ensures fetching all items and products in one query.
+
+---
+
+## Information Expert Principle
+
+If you repeat the same logic in many methods,
+move it to a **service** or **expert class** (e.g., `Cart` for `ItemCart`).
+
+Example:
+
 ```java
- @PostMapping("/{id}/item")
-    public ResponseEntity<ItemCartDto> addToCart(
-            @PathVariable UUID  id,
-            @RequestBody AddItemToCartReqeustDto data
-            ) {
-        var cartItemCartDto = cartService.addToCart(id, data.getProductId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
-    }
+public ItemCart getItemCart(Long productId) {
+    return itemCart.stream()
+        .filter(item -> item.getProduct().getId().equals(productId))
+        .findFirst()
+        .orElse(null);
+}
 ```
-with code in the service :
+
+---
+
+## Anemic Domain
+
+Classes that **only have data** —
+the logic should live in services related to that entity.
+
+---
+
+## Rich Domain
+
+Classes that **have data and behavior**:
+
+* **Data:** state/properties (`id`, `items`, `status`, `total`, etc.)
+* **Behavior:** business logic/methods (`addItem()`, `calculateTotal()`, etc.)
+
+Controller → only request/response
+Logic → move to service
+
+---
+
+## Clean Controller with Exception Handling
+
+Before:
+
 ```java
-  public ItemCartDto addToCart(UUID id, Long productId) {
-        var cart = cartRepository.findById(id).orElse(null);
-        var product = productRepository.findById(productId).orElse(null);
-        if (cart == null)
-            throw new CartNotFoundException();
-        if (product == null)
-            throw new ProductNotFoundException();
-        var itemCart = cart.addItemCart(product);
-        cartRepository.save(cart);
-        return cartMapper.toDto(itemCart);
-    }
+@PostMapping("/{id}/item")
+public ResponseEntity<ItemCartDto> addToCart(
+        @PathVariable UUID id,
+        @RequestBody AddItemToCartReqeustDto data
+) {
+    var cart = cartRepository.findById(id).orElse(null);
+    var product = productRepository.findById(productId).orElse(null);
+    if (cart == null)
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Cart not found"));
+    if (product == null)
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Product not found"));
+    var itemCart = cart.addItemCart(product);
+    cartRepository.save(cart);
+    var cartItemCartDto = cartMapper.toDto(itemCart);
+    return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+}
 ```
-and don't forget what you should write in the exception classes
+
+After refactoring:
+
+```java
+@PostMapping("/{id}/item")
+public ResponseEntity<ItemCartDto> addToCart(
+        @PathVariable UUID id,
+        @RequestBody AddItemToCartReqeustDto data
+) {
+    var cartItemCartDto = cartService.addToCart(id, data.getProductId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+}
+```
+
+Service:
+
+```java
+public ItemCartDto addToCart(UUID id, Long productId) {
+    var cart = cartRepository.findById(id).orElse(null);
+    var product = productRepository.findById(productId).orElse(null);
+    if (cart == null)
+        throw new CartNotFoundException();
+    if (product == null)
+        throw new ProductNotFoundException();
+    var itemCart = cart.addItemCart(product);
+    cartRepository.save(cart);
+    return cartMapper.toDto(itemCart);
+}
+```
+
+Exceptions:
+
 ```java
 public class CartNotFoundException extends RuntimeException {}
 public class ProductNotFoundException extends RuntimeException {}
 ```
-and in Controller class you should add this :
+
+Controller exception handling:
+
 ```java
 @ExceptionHandler(CartNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleCartException(){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("error" , "Cart not found")
-        );
-    }
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleProductException(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("error" , "Product not found")
-        );
-    }
+public ResponseEntity<Map<String,String>> handleCartException() {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("error", "Cart not found"));
+}
+
+@ExceptionHandler(ProductNotFoundException.class)
+public ResponseEntity<Map<String,String>> handleProductException() {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(Map.of("error", "Product not found"));
+}
 ```
+
 ---
 
-## Documenting Apis with Swagger : 
-A tool that automatically generate documentation for your apis
-first ypu should add this depandency :
+## 📘 Documenting APIs with Swagger
+
+A tool that automatically generates documentation for your APIs.
+
+---
+
+### 🔧 Add Dependency
+
 ```xml
-   <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.8.13</version>
-   </dependency>
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>2.8.13</version>
+</dependency>
 ```
-and after to acces to swagger you should 
-go to http://localhost:8080/swagger-ui.html
-and after you can see all the Apis in your project
-and also you can test each Api
-if you want to change the names of Controller in swagger 
-we should go to controller and add this annotation
+
+---
+
+### 🌐 Access Swagger UI
+
+After starting your application, go to:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+You can view and test all your APIs there.
+
+---
+
+### 🏷️ Change Controller Name in Swagger
+
+Add this annotation to your controller:
+
 ```java
 @Api(tags = "Cart")
 public class CartController {}
 ```
-and i can also add description for each endpoint
-just add this annotation
+
+---
+
+### 📝 Add Description to Endpoints
 
 ```java
 import io.swagger.v3.oas.annotations.Operation;
 
 @PostMapping("/{id}/item")
 @Operation(summary = "Add item to cart")
-public ResponseEntity<ItemCartDto> addToCart()
-```
-and also you can add desc for param using @Parameter annotation
-
-```java
-    @Operation(summary = "Add item to cart")
-    @PostMapping("/{id}/item")
-    public ResponseEntity<ItemCartDto> addToCart(
-            @Parameter(description = "id of cart")
-            @PathVariable UUID  id,
-            @RequestBody AddItemToCartReqeustDto data
-            ) {
-        var cartItemCartDto = cartService.addToCart(id, data.getProductId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
-    }
+public ResponseEntity<ItemCartDto> addToCart() { ... }
 ```
 
 ---
 
-## How i can work with  Files IN REQ :
- first when i send the req in postman should be Post 
- and in the body reqeust i dont choose send data as json 
- i choose data form option and first in the key i chose tyoe to file instead text 
- and after in the value i select the file
- and after if i want add object i add it 
- but i need to map it from string to object
- like this in controller :
- ```java
-    @Value("${server.port}") String port;
-    @Value("${server.server}") String server;
- @PostMapping("/upload")
+### 📄 Add Description for Parameters
+
+```java
+@Operation(summary = "Add item to cart")
+@PostMapping("/{id}/item")
+public ResponseEntity<ItemCartDto> addToCart(
+        @Parameter(description = "id of cart")
+        @PathVariable UUID id,
+        @RequestBody AddItemToCartReqeustDto data
+) {
+    var cartItemCartDto = cartService.addToCart(id, data.getProductId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+}
+```
+
+---
+
+## 📂 Handling Files in Requests
+
+When sending a request in **Postman**:
+
+* Use **POST** method.
+* Choose **form-data** in the Body.
+* Set key type to **File** for the file field.
+* Add other fields as **text**.
+* Convert JSON string to object in controller.
+
+Example:
+
+```java
+@Value("${server.port}") String port;
+@Value("${server.server}") String server;
+
+@PostMapping("/upload")
 public ResponseEntity<Map<String,String>> uploadFile(
         @RequestPart("file") MultipartFile file,
-        @RequestPart("client") String ClientString
-        ){
-        ObjectMapper objectMapper = new ObjectMapper();
-        Client client = objectMapper.readValue(ClientString, Client.class);
-        String path = "src/ressoruces/static/uploads/"+cllient.getId()+".jps";
-        path.transferTo(Path.of(path));
-        client.setImage("http//:"+server+"/"+port+"/uploads/"+cllient.getId());
-        return client
+        @RequestPart("client") String clientString
+) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Client client = objectMapper.readValue(clientString, Client.class);
+    String path = "src/resources/static/uploads/" + client.getId() + ".jpg";
+    file.transferTo(Path.of(path));
+    client.setImage("http://" + server + ":" + port + "/uploads/" + client.getId());
+    return client;
 }
- ```
-the ObjectMapper is a class from jackson library include in spring
-can mapper  json to object
-the url for image not work you should add endpoint for it
+```
+
+> `ObjectMapper` (from Jackson) maps JSON strings to objects.
+
+---
+
+### 📸 Serve Uploaded Images
+
+You need an endpoint to serve the stored images:
 
 ```java
 import org.springframework.web.bind.annotation.GetMapping;
 
 @GetMapping("photos/{id}")
-public ResponseEntity getPhoto(@PathVariable("id") Long id){
-    String path = "src/ressoruces/static/uploads/"+id+".jps";
-    SystemFileRessource fileRessource = new SystemFileRessource(path);
-    if(!fileRessource.exists())
+public ResponseEntity getPhoto(@PathVariable("id") Long id) {
+    String path = "src/resources/static/uploads/" + id + ".jpg";
+    SystemFileResource fileResource = new SystemFileResource(path);
+    if (!fileResource.exists())
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    return ResponseEntity.type(MediaType.IMAGE_JPEG).ok(fileRessource);
+    return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(fileResource);
 }
 ```
-SystemFileRessource is a class that i create to get the file from the system
 
----
-# 5 Spring Security : 
-First you should add Spring security depandency in your pom file
-and after you get endpoint login automatically generate page login 
-and pass and name for user
-
-## Authintication Methods :
-1 . **Session_based** : 
-user send Post/login to server and server check credentials if is valid server will
-create session file where stored information about user and return session id to
-user and after this browser (client side) storage session id in the cookie
-is not scarbed becouse more users mean more storage in the server 
-here we where need token based  authentication
-2. **Token_based** : (JWT) (to see how exactly token like you can go to this wibsite https://www.jwt.io/)
-Rest Api use this method .
-so token work like this : client send Post/login to server and server check credentials if is valid
-server will craete token(like password centent all the thing about user) and return it to user
-and after if user want to send and other req  is autimatically send req with  auth = {token}
-so for summery the key different is in token the token saved in client and server just decoudage it and extract info 
-and after compar it with the data in bd
----
-now we need to create package named confiig
-and add file to config the srping security
-so when we went to config spring security 
-we nedd to use 3 things Csrf and **stateless session** so what this ?
-when we just learn we don't use the session/coockies
-so that named stateless session and the RestApi don't use session
-named Stateless RestApi 
-and **CSRF** is mean CSRF (Cross-Site Request Forgery) is an attack where a malicious site tricks a user’s browser 
-into making unwanted requests to your app using the user’s active session
-so when we dont use session we need to disbale csrf (in case we use jwt or dont use anything)
-in the package config we create class named SecurityConfig
-and the third option is **Authorization**
-## 3.1 what is the different between Authentication and Authorization ? :
-### 🔑 1. **Authentication = "Who are you?"**
-
-> ✅ **Verifying identity** — proving you are **who you say you are**.
-
-#### Examples:
-- Logging in with **email + password**
-- Scanning your **fingerprint**
-- Using **Google Sign-In**
-- Entering a **one-time code (2FA)**
-
-#### In code:
-When you send:
-```json
-{ "email": "you@example.com", "password": "secret123" }
-```
-→ The server checks: *"Is this user real? Is the password correct?"*  
-✅ If yes → **Authenticated!**
-
-> 🧠 Think: **AuthN = "Are you really you?"**
+> `SystemFileResource` is a custom class used to retrieve the file from the system.
 
 ---
 
-### 🚪 2. **Authorization = "What are you allowed to do?"**
+# 🛡️ 5. Spring Security
 
-> ✅ **Checking permissions** — now that we know **who you are**, what can you access?
+First, add **Spring Security** dependency in your `pom.xml`.
 
-#### Examples:
-- A regular user **can’t delete** another user’s post
-- An **admin** can access `/api/admin/users`
-- A **guest** can only view public pages
-- A **paid user** can download premium content
-
-#### In code:
-After login, you try to access:
-```
-DELETE /api/posts/123
-```
-→ Server checks: *"Is this user the owner of post 123? Or an admin?"*  
-✅ If yes → **Authorized!**  
-❌ If no → **403 Forbidden**
-
-> 🧠 Think: **AuthZ = "Are you allowed to do this?"**
-
----
-### code sending if each one fild :
-> 💡 **401 = "You’re not logged in (or token is bad)"**  
-> 💡 **403 = "You’re logged in, but you don’t have permission"**
+After that, Spring automatically creates a **login page** and default user credentials.
 
 ---
 
+## 🔐 Authentication Methods
 
-### 💬 summery:
-- **Authentication** = **Login** (proving you are you)
-- **Authorization** = **Permissions** (what you’re allowed to do after login)
+### 1. Session-based Authentication
 
-You **always authenticate first**, then authorize.
+* User sends `POST /login`
+* Server validates credentials
+* Server creates a **session** and stores it
+* Client stores **session ID** in cookies
+
+> ⚠️ Not scalable — more users mean more storage on server.
+
 ---
-let's return now to configuration file 
+
+### 2. Token-based Authentication (JWT)
+
+> REST APIs use this method.
+
+* Client sends `POST /login`
+* Server validates credentials
+* Server generates **token (JWT)** and sends it back
+* Client stores token and sends it with each request (Authorization header)
+
+💡 **Difference:**
+
+* Token-based: data stored on **client**
+* Session-based: data stored on **server**
+
+Check tokens visually: [https://jwt.io](https://jwt.io)
+
+---
+
+## ⚙️ Spring Security Configuration
+
+Create a package `config`, then add a class `SecurityConfig`.
+
+---
+
+### 📋 Stateless Session & CSRF
+
+Since REST APIs are **stateless** (no session or cookies),
+we must **disable CSRF** (Cross-Site Request Forgery protection).
+
+---
+
+### 📘 Example Configuration
+
 ```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // first we need to make session stateless
-        //second Disable csrf
-        //third disable default login page
         http
-                .sessionManagement(c ->
-                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(c ->
-                        c.anyRequest().permitAll());
+            .sessionManagement(c ->
+                c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(c ->
+                c.anyRequest().permitAll());
 
-            return http.build();
+        return http.build();
     }
 }
 ```
-this method run automatically in the runtime
-authorizeHttpRequests(c ->
-c.anyRequest().permitAll()); this line give us access for  all the endpoint  
-in our project without authintictaion 
-if we want to add specifice reqeust 
+
+> This allows access to all endpoints (no authentication yet).
+
+---
+
+### 🔒 Restrict Specific Endpoints
+
 ```java
-  http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
+http
+    .csrf(csrf -> csrf.disable())
+    .sessionManagement(session ->
+        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .authorizeHttpRequests(auth -> auth
         .requestMatchers("/carts/**").permitAll()
-                         .requestMatchers("/error").permitAll()  // IMPORTANT!
-                         .anyRequest().authenticated()  // Change back to authenticated
-                 );
+        .requestMatchers("/error").permitAll() // ✅ Important!
+        .anyRequest().authenticated());
 return http.build();
 ```
-this line tell spring security cart/** is public but any other 
-request need to be authenticated
-Wow this  works :
-When Spring Security blocks a request with 403, it tries to redirect to the /error endpoint to show the error page.
-But /error was ALSO blocked by .anyRequest().authenticated(),
-so it created an infinite loop or just showed "Forbidden"!
-The fix:
-java.requestMatchers("/error").permitAll()  // ✅ Allows error page to show
-Now when there's an error, Spring can actually display it instead of blocking the error page itself!
+
+> `/carts/**` → public
+> `/error` → must be public (prevents redirect loop)
+> All others → require authentication.
+
 ---
-### Hashing :
-to make your password more secure you can use hash
-first you should add new bean in you config file like this :
+
+## 🔑 Authentication vs Authorization
+
+| Concept            | Meaning          | Example                   | Response Code      |
+| ------------------ | ---------------- | ------------------------- | ------------------ |
+| **Authentication** | Who are you?     | Login with email/password | `401 Unauthorized` |
+| **Authorization**  | What can you do? | Access admin endpoints    | `403 Forbidden`    |
+
+💬 Summary:
+
+* **AuthN = Login (prove identity)**
+* **AuthZ = Permissions (check access)**
+
+---
+
+## 🔐 Password Hashing
+
+To secure passwords, add a `PasswordEncoder` bean:
+
 ```java
- @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
 ```
-PasswordEncoder is an interface that provides methods to encode and decode passwords.
-and BCryptPasswordEncoder is a class that implements PasswordEncoder and uses the BCrypt algorithm to encode and decode passwords.
-and after you should add this line in the controller before you save the user :
+
+And use it before saving a user:
+
 ```java
 user.setPassword(passwordEncoder.encode(user.getPassword()));
 ```
 
+---
+
 ## 5.2 Authentication Management
 
-![AuthentecationManagement](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/blob/06b0ec93b47bbb25f55a2dc904571d1ce9293d1a/AuthentecationManagement.jpeg)
-I use service to manage authantification but spring security 
-can automatically manage authantification for you
-instead of this : 
+![AuthenticationManagement](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/blob/06b0ec93b47bbb25f55a2dc904571d1ce9293d1a/AuthentecationManagement.jpeg)
+
+---
+
+### 🧩 Manual Authentication Example
+
 ```java
 @Service
 @AllArgsConstructor
 public class UserService {
     private final PasswordEncoder passwordEncoder;
-    public String authUser(AuthUserDto authUserDto , UserRepository userRepository){
+
+    public String authUser(AuthUserDto authUserDto, UserRepository userRepository) {
         var user = userRepository.findByEmail(authUserDto.getEmail());
-        if(user == null)
+        if (user == null)
             throw new UserNotFoundException();
 
-        if(!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
             throw new InvalidPasswordException();
 
         return "Authenticated";
     }
 }
 ```
-this logic exist in spring security 
-we have the  **AuthenticationManager** this interfac super interface for all authentication managers
-and we have **AuthenticationProvider** implemented from it and we have **DaoAuthenticationProvider**
-extends from the last one and this last one has to fields : 
-**userDetailsService** and **passwordEncoder** and the methode authenticate() 
-**userDetailsService** is an object find the user by String (byUserName)
-but you can use another field like email
-so for simple userDetialsService get the user from bd if exist
-and after the DaoAuthenticationProvider use the passwordEncoder to compare the password
-and after generate response automatically and also hundle exception  for you
-userDetialsService this method have methode named loedByUsername()
-and this method return **UserDetails**
-so what is **UserDetails** ? 
-is in interface has all the methods you need for user like 
-isAccountNonExpired(), isAccountNonLocked(), isCredentialsNonExpired(), isEnabled() ...
-and also 2 fields : username and password 
-soo the new version of our service is : 
+
+---
+
+### ⚙️ AuthenticationManager & DaoAuthenticationProvider
+
+Spring provides these classes automatically:
+
+* **AuthenticationManager** → orchestrates authentication
+* **DaoAuthenticationProvider** → handles credentials
+* **UserDetailsService** → loads user from DB
+* **PasswordEncoder** → verifies password
+
+---
+
+### 🧠 UserDetailsService Implementation
+
 ```java
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        
-        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("user not found"));
-        return new User(user.getEmail(),
-                user.getPassword(), 
-                Collections.emptyList());
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
+
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+
+        return new User(
+                user.getEmail(),
+                user.getPassword(),
+                Collections.emptyList()
+        );
     }
 }
 ```
-but we need some things in config file to make it work
+
+---
+
+### 🧩 DaoAuthenticationProvider Bean
+
 ```java
- public final UserDetailsService userDetailsService;
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        var provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService);
-        return provider;
-    }
+public final UserDetailsService userDetailsService;
+
+@Bean
+public DaoAuthenticationProvider authenticationProvider() {
+    var provider = new DaoAuthenticationProvider();
+    provider.setPasswordEncoder(passwordEncoder());
+    provider.setUserDetailsService(userDetailsService);
+    return provider;
+}
 ```
-so how this work?
-first we give the passwordEncoder from the Bean we already wrote 
-and what about UserDetailsService ? 
-we declared userService as service and is implement from
-UserDetailsService  so in the runtime spring will injected  our UserSrvice into
-SecuirtyCnfig and save it in the field userDetailsService.
-After this we need to  add this line to the config file :
+
+Spring automatically injects your `UserService` (because it implements `UserDetailsService`).
+
+---
+
+### 🧱 AuthenticationManager Bean
+
 ```java
-   @Bean
+@Bean
 public AuthenticationManager authenticationManager(
         AuthenticationConfiguration config
 ) throws Exception {
-    return  config.getAuthenticationManager();
+    return config.getAuthenticationManager();
 }
 ```
-This method retrieves the pre-configured AuthenticationManager from Spring Security,
-which uses your DaoAuthenticationProvider and UserDetailsService internally
-And after we need to add this in the controller :
-private final AuthenticationManager authenticationManager;
-```java
-    private finale AuthenticationManager authenticationManager;
-    @PostMapping("login")
-    public ResponseEntity<Void> auth(
-            @Valid @RequestBody AuthUserDto authUserDto
-    ) {
-       authenticationManager.authenticate(
-               new UsernamePasswordAuthenticationToken(
-                       authUserDto.getEmail(),
-                       authUserDto.getPassword()
-               )
-       );
-        return ResponseEntity.ok().build();
-    }
-```
-we should add management field in the controll becouse is repsonsable for 
-authintication 
-so in summery this work like this :
-The controller sends the credentials to the AuthenticationManager.
 
-The AuthenticationManager delegates the work to the configured DaoAuthenticationProvider.
-
-The DaoAuthenticationProvider uses:
-
-your custom UserDetailsService to load the user from the database.
-
-your configured PasswordEncoder to validate the password.
-
-If authentication succeeds, Spring Security marks the user as authenticated in the security context automatically.
-If it fails, Spring throws exceptions like:
-
-UsernameNotFoundException → user not found
-
-BadCredentialsException → invalid password
+> Retrieves Spring’s built-in `AuthenticationManager` that uses your provider and encoder.
 
 ---
-## 5.3  Generate Json Web Tokens(JWT) : 
-first you should add this depandency :
+
+### 🚀 Controller Authentication Example
+
+```java
+private final AuthenticationManager authenticationManager;
+
+@PostMapping("login")
+public ResponseEntity<Void> auth(
+        @Valid @RequestBody AuthUserDto authUserDto
+) {
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            authUserDto.getEmail(),
+            authUserDto.getPassword()
+        )
+    );
+    return ResponseEntity.ok().build();
+}
+```
+
+---
+
+### ⚙️ How It Works
+
+1. Controller sends credentials to `AuthenticationManager`.
+2. `AuthenticationManager` delegates to `DaoAuthenticationProvider`.
+3. Provider uses:
+
+    * `UserDetailsService` → load user
+    * `PasswordEncoder` → verify password
+4. If successful → user is authenticated
+5. If failed → Spring throws:
+
+    * `UsernameNotFoundException`
+    * `BadCredentialsException`
+
+
+---
+
+## 5.3 Generate JSON Web Tokens (JWT)
+
+First, add these dependencies:
+
 ```xml
- <dependency>
+<dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-api</artifactId>
     <version>0.12.6</version>
- </dependency>
- <dependency>
+</dependency>
+
+<dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-impl</artifactId>
     <version>0.12.6</version>
     <scope>runtime</scope>
- </dependency>
- <dependency>
+</dependency>
+
+<dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-jackson</artifactId>
     <version>0.12.6</version>
     <scope>runtime</scope>
- </dependency>
+</dependency>
 ```
-and after you should add new service named  JwtService
+
+---
+
+### 🔹 JwtService
+
 ```java
 @Service
 public class JwtService {
-    final long tokenExpiration = 86400; // token well expires in 24 hours
-    public String generateToken(String email){
-    return Jwts.builder()
-            .subject(email)
-            .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
-            .compact();
+    final long tokenExpiration = 86400; // token expires in 24 hours
 
+    public String generateToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+                .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+                .compact();
     }
 }
 ```
-Expliation of the code : 
-```java
-public String generateToken(String email){
-```
-> Declares a method that takes an `email` (used as the user identifier) and returns a JWT as a `String`.
+
+---
+
+### 🧠 Explanation
 
 ```java
-    return Jwts.builder()
+public String generateToken(String email) {
 ```
-> Starts building a new JWT using the **Java JWT (jjwt)** library’s fluent API.
+
+> Declares a method that takes an `email` (used as the user identifier) and returns a JWT string.
 
 ```java
-            .subject(email)
+return Jwts.builder()
 ```
-> Sets the **`sub` (subject)** claim of the JWT to the user’s email — typically used to identify the principal (user).
+
+> Starts building a new JWT using the **JJWT** library’s fluent API.
 
 ```java
-            .issuedAt(new Date())
+.subject(email)
 ```
-> Sets the **`iat` (issued at)** claim to the current timestamp, indicating when the token was created.
+
+> Sets the **`sub` (subject)** claim — identifies the user.
 
 ```java
-            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+.issuedAt(new Date())
 ```
-> Sets the **`exp` (expiration)** claim: the token will expire after `tokenExpiration` seconds (since `1000 * tokenExpiration` converts seconds to milliseconds).
+
+> Sets the **`iat` (issued at)** claim.
 
 ```java
-            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+.expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
 ```
-> Signs the JWT using **HMAC-SHA256** with a hardcoded secret key (`"secret"`).  
-> is convert constant value "secret" to Bytes
-> ⚠️ **Warning**: In production, never hardcode secrets — use environment variables or a secure config.
+
+> Sets the **`exp` (expiration)** claim — token expires after 24 hours.
 
 ```java
-            .compact();
+.signWith(Keys.hmacShaKeyFor("secret".getBytes()))
 ```
-> Finalizes and **serializes the JWT** into a compact, URL-safe string (e.g., `xxxxx.yyyyy.zzzzz`).
+
+> Signs the JWT with **HMAC-SHA256** using a secret key.
+> ⚠️ Don’t hardcode this key — use environment variables in production.
 
 ```java
-}
+.compact();
 ```
-> End of method.
 
-✅ **Result**: A signed, time-limited JWT string that represents an authenticated user (identified by email).
+> Builds the token and returns it as a compact string (`xxxxx.yyyyy.zzzzz`).
 
-and after you should add new dto named JwtResponseDto
+✅ **Result:** a signed JWT identifying the authenticated user.
+
+---
+
+### 🔹 JwtResponseDto
+
 ```java
 @Data
 @AllArgsConstructor
@@ -1674,53 +1860,45 @@ public class JwtResponseDto {
     private String token;
 }
 ```
-and after we return to authController and 
-change the return type of auth method to JwtResponseDto
+
+---
+
+### 🔹 AuthController (JWT Return)
+
 ```java
-  @PostMapping("login")
-    public ResponseEntity<JwtResponseDto> auth(
-            @Valid @RequestBody AuthUserDto authUserDto
-    ) {
-       authenticationManager.authenticate(
-               new UsernamePasswordAuthenticationToken(
-                       authUserDto.getEmail(),
-                       authUserDto.getPassword()
-               )
-       );
-        String token = jwtService.generateToken(authUserDto.getEmail());
-        return ResponseEntity.ok(new JwtResponseDto(token));
-    }
+@PostMapping("login")
+public ResponseEntity<JwtResponseDto> auth(
+        @Valid @RequestBody AuthUserDto authUserDto
+) {
+    authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                    authUserDto.getEmail(),
+                    authUserDto.getPassword()
+            )
+    );
+    String token = jwtService.generateToken(authUserDto.getEmail());
+    return ResponseEntity.ok(new JwtResponseDto(token));
+}
 ```
-but this type of secret show error becouse is not secure
-so we need  first to make "secret" as value and save it in the application file 
-and after we call it in the jwtService
-and after we need to use spring dotenv
-### fast documentation about spring dotenv  : 
-1. Add the dependency to your project:
+
+---
+
+### ⚠️ Making the Secret Secure
+
+Instead of hardcoding `"secret"`, store it in a `.env` file and use **spring-dotenv**.
+
+#### Add the dependency
+
 ```xml
-    <dependency>
-        <groupId>me.paulschwarz</groupId>
-        <artifactId>spring-dotenv</artifactId>
-        <version>{version}</version>
-    </dependency>
+<dependency>
+    <groupId>me.paulschwarz</groupId>
+    <artifactId>spring-dotenv</artifactId>
+    <version>{version}</version>
+</dependency>
 ```
 
----
+#### Example `.env` file
 
-### 🔹 What is `spring-dotenv`?
-
-`spring-dotenv` is a **third-party library** (not part of Spring Boot itself) that allows your **Spring Boot application to load environment variables from a `.env` file** — just like you would in Node.js, Python, or other frameworks.
-
-GitHub: https://github.com/paulschwarz/spring-dotenv
-
----
-
-### 🔹 What does it do?
-
-By default, **Spring Boot does NOT read `.env` files**.  
-But with this library, you can create a file like:
-
-**`.env`** (in your project root):
 ```env
 DB_URL=jdbc:mysql://localhost:3306/mydb
 DB_USERNAME=root
@@ -1728,7 +1906,7 @@ DB_PASSWORD=secret123
 JWT_SECRET=my-super-secret-key
 ```
 
-Then, in your **`application.properties`** or **`application.yml`**, you can use those values:
+#### In `application.properties`
 
 ```properties
 spring.datasource.url=${DB_URL}
@@ -1737,274 +1915,144 @@ spring.datasource.password=${DB_PASSWORD}
 app.jwt.secret=${JWT_SECRET}
 ```
 
-✅ The `spring-dotenv` library **loads the `.env` file at startup** and makes its variables available as **system/environment properties** — so Spring can resolve `${...}` placeholders.
+✅ This keeps secrets **outside your code**.
+
+You can add `.env.example` (without values) to share required keys safely with your team.
 
 ---
 
-### 🔹 Why would you need it?
+## 5.4 Validate JWT
 
-#### ✅ Benefits:
-1. **Keep secrets out of code**  
-   → Never hardcode passwords, API keys, or URLs in your source.
-2. **Easy local development**  
-   → Each developer can have their own `.env` without affecting others.
-3. **Consistent with modern dev practices**  
-   → Works like `.env` in React, Django, Express, etc.
-4. **Ignored by Git**  
-   → Add `.env` to `.gitignore` to avoid leaking secrets.
+Add a validation method to your `JwtService`:
 
-#### 🚫 Without it:
-- You’d have to manually set env vars in your OS/shell:
-  ```bash
-  export DB_PASSWORD=secret123
-  java -jar app.jar
-  ```
-- Or pass them via command line:
-  ```bash
-  java -jar -DDB_PASSWORD=secret123 app.jar
-  ```
-- Or store secrets in `application.properties` → **bad for security!**
-
----
- so now  .env is ignored by Git
- so what if we work with team i need to tell others 
- what environment variables are required to run the app — without exposing real secrets.
-so to resolve this we add file named .env.example the text type the file 
-and type in it just the keys without values
-> after generate the token how is validate?
-## 5.4 Validate JWT :
-we need if the token corretc if is expired ..
-so first we need add this method in JwtService
 ```java
-  public boolean validateToken(String token){
-        try{
-            var claims = Jwts.parser()
-                        .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
-                        .build()
-                        .parseSignedClaims(token)
-                        .getPayload();
-            return claims.getExpiration().after(new Date());
-        } catch (JwtException e) {
-            return false;
-        }
+public boolean validateToken(String token) {
+    try {
+        var claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getExpiration().after(new Date());
+    } catch (JwtException e) {
+        return false;
     }
+}
 ```
-and after we need to add this method in authController
+
+---
+
+### 🔹 Manual Validation Endpoint
+
 ```java
 @PostMapping("validate")
 public boolean validate(
-@RequestHeader("Authorization") String token
-){
-var tokenWithoutBearer = token.replace("Bearer","");
-return jwtService.validateToken(tokenWithoutBearer);
+        @RequestHeader("Authorization") String token
+) {
+    var tokenWithoutBearer = token.replace("Bearer", "");
+    return jwtService.validateToken(tokenWithoutBearer);
 }
 ```
-but this way is manual validation we need 
-to make spring security do this we use the Filter  class
-the filter class is a class that implements the Filter interface
-and we use it before the controller is check for authintication
-, modify headrer ...
-so this a simple filter :
+
+---
+
+## 🔹 Using Filters for Automatic JWT Validation
+
+A **Filter** runs before your controller to inspect, validate, or modify requests.
+
+### Example: Logging Filter
+
 ```java
 @Component
-public class LoggingFilter  extends OncePerRequestFilter {
-
+public class LoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-              HttpServletResponse response,
-              FilterChain filterChain) throws ServletException, IOException
-    {
-        System.out.println("Request :  "+ request.getRequestURI());
-        System.out.println("Method :  "+ request.getMethod());
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        System.out.println("Request: " + request.getRequestURI());
+        System.out.println("Method: " + request.getMethod());
         filterChain.doFilter(request, response);
-        System.out.println("Response : "+ response.getStatus());
+        System.out.println("Response: " + response.getStatus());
     }
 }
 ```
-and now we see how we can create filter to check the validation : 
+
+---
+
+### JWT Authentication Filter
+
 ```java
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
         var authHeader = request.getHeader("Authorization");
-        if( authHeader == null || !authHeader.startsWith("Bearer")){
+
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         var token = authHeader.replace("Bearer ", "");
-        if(!jwtService.validateToken(token)){
+
+        if (!jwtService.validateToken(token)) {
             filterChain.doFilter(request, response);
             return;
         }
-        var authintication = new UsernamePasswordAuthenticationToken(
+
+        var authentication = new UsernamePasswordAuthenticationToken(
                 jwtService.getEmail(token),
                 null,
                 null
         );
-        authintication.setDetails(
+
+        authentication.setDetails(
                 new WebAuthenticationDetailsSource().buildDetails(request)
         );
-        SecurityContextHolder.getContext().setAuthentication(authintication);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 }
 ```
-Absolutely! Let's walk through your `doFilterInternal` method **line by line**, then explain **what it does as a whole**.
 
 ---
 
-### 🔍 Full Code with Line-by-Line Explanation
+### 🔍 Explanation
+
+1. Gets the `Authorization` header.
+2. Checks if it starts with `Bearer`.
+3. Extracts and validates the JWT.
+4. If valid → creates an `Authentication` object and stores it in Spring’s context.
+5. Proceeds with the filter chain.
+
+✅ After this filter runs, Spring Security knows who the current user is.
+
+---
+
+### 🔹 Add Filter to SecurityConfig
 
 ```java
-protected void doFilterInternal(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    FilterChain filterChain
-) throws ServletException, IOException {
+http
+    .csrf(AbstractHttpConfigurer::disable)
+    .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/carts/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/users").permitAll()
+            .requestMatchers("/auth/validate").permitAll()
+            .requestMatchers("/auth/login").permitAll()
+            .requestMatchers("/error").permitAll()
+            .anyRequest().authenticated()
+    )
+    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+return http.build();
 ```
-> This is the core method of a Spring Security filter. It runs on **every HTTP request** to check if the user is authenticated (via JWT in this case).
 
 ---
-
-```java
-    var authHeader = request.getHeader("Authorization");
-```
-> Gets the value of the `Authorization` header from the incoming HTTP request.  
-> Example: `"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
-
----
-
-```java
-    if (authHeader == null || !authHeader.startsWith("Bearer")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-```
-> ✅ **If there’s no `Authorization` header**, or it **doesn’t start with `"Bearer "`**,  
-> → skip authentication (maybe it’s a public endpoint),  
-> → pass the request to the next filter (or controller) using `filterChain.doFilter(...)`,  
-> → and **stop processing** (`return`).
-
-> 🔒 This allows unauthenticated access to public routes (like `/login`, `/register`).
-
----
-
-```java
-    var token = authHeader.replace("Bearer ", "");
-```
-> Extracts the actual JWT by **removing the `"Bearer "` prefix**.  
-> Now `token` contains only the JWT string: `"eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
-
----
-
-```java
-    if (!jwtService.validateToken(token)) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-```
-> Asks your `JwtService` to **verify the token**:
-> - Is it signed correctly?
-> - Has it expired?
-> - Is it malformed?
-
-> ❌ If **invalid**, again skip auth and continue (though in practice, you might want to return 401 here — more on that below).  
-> ✅ If **valid**, proceed.
-
-> ⚠️ **Note**: In production, you should usually **reject invalid tokens** with a 401 error instead of silently continuing.
-
----
-
-```java
-    var authintication = new UsernamePasswordAuthenticationToken(
-        jwtService.getEmail(token),
-        null,
-        null
-    );
-```
-> Creates an **authenticated `Authentication` object**:
-> - **Principal**: the user’s email (extracted from the JWT),
-> - **Credentials**: `null` (because JWT is stateless — no password needed after login),
-> - **Authorities**: `null` (⚠️ this is a problem — see note below).
-
-> This object tells Spring Security: “This user is authenticated.”
-
-> 🔸 **Typo**: variable name should be `authentication`, not `authintication`.
-
----
-
-```java
-    authintication.setDetails(
-        new WebAuthenticationDetailsSource().buildDetails(request)
-    );
-```
-> Adds extra request details (like client IP, session ID) to the authentication object.  
-> Useful for auditing or security logging.
-
----
-
-```java
-    SecurityContextHolder.getContext().setAuthentication(authintication);
-```
-> ✅ **This is the key line!**  
-> It **stores the authenticated user** in Spring Security’s context.  
-> Now, anywhere in your app (controllers, services), you can get the current user via:
-> ```java
-> SecurityContextHolder.getContext().getAuthentication().getName();
-> ```
-
----
-
-```java
-    filterChain.doFilter(request, response);
-```
-> Finally, **passes the request** to the next filter or your controller.  
-> At this point, Spring Security considers the user **authenticated**.
-
----
-
-```java
-}
-```
-> End of method.
-
----
-
-### 🧩 What Does This Code Do **Altogether**?
-
-This is a **JWT Authentication Filter** that:
-
-1. **Intercepts every HTTP request**.
-2. **Looks for a `Bearer <token>`** in the `Authorization` header.
-3. If found:
-    - Validates the JWT.
-    - Extracts the user’s email from it.
-    - Creates an `Authentication` object.
-    - Stores it in Spring Security’s context.
-4. If no token (or invalid), it **lets the request continue** — but **unauthenticated**.
-
-✅ After this filter runs, your Spring Boot controllers can:
-- Use `@PreAuthorize("hasRole('USER')")`
-- Access the current user via `SecurityContextHolder`
-- Be protected by Spring Security rules
-
----
-
-and after we need to add this filter as primary filter in securityconfig
-```java
- http
-                 .csrf(AbstractHttpConfigurer::disable)
-                 .sessionManagement(session -> session
-                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                 .authorizeHttpRequests(auth -> auth
-                         .requestMatchers("/carts/**").permitAll()
-                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                         .requestMatchers("/auth/validate").permitAll()
-                         .requestMatchers("/auth/login").permitAll()
-                         .requestMatchers("/error").permitAll()
-                         .anyRequest().authenticated()  // Change back to authenticated
-                 )
-                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-```
 
 
