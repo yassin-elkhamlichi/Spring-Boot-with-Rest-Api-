@@ -2054,5 +2054,29 @@ return http.build();
 ```
 
 ---
+### Accessing the Current User :
+ths the way how you can get you User data in the Url :
+in the AuthController :
+```java
+ @GetMapping("/me")
+    public ResponseEntity<UserDto> me() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = (String) authentication.getPrincipal();
+
+        var user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var userDto =userMapper.toDto(user);
+
+        return ResponseEntity.ok(userDto);
+    }
+```
+
+---
+ 
+
+
 
 
