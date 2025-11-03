@@ -19,8 +19,8 @@ public class JwtService {
     private String secret;
 
     public String generateToken(UserDto userDto){
-    return Jwts.builder()
-            .subject(userDto.getId().toString())
+        return Jwts.builder()
+            .subject(Long.toString(userDto.getId()))
             .claim("email" , userDto.getEmail())
             .claim("name" , userDto.getName())
             .issuedAt(new Date())
@@ -38,9 +38,19 @@ public class JwtService {
             throw new JwtException(e.getMessage());
         }
     }
-    public Long getId(String token) throws JsonProcessingException {
+    public Long getId(String token) {
         var claims = getPayload(token);
-        return  Long.valueOf(claims.getSubject());
+        String subject = claims.getSubject();
+        // defensive checks: subject may be null, empty or the literal string "null"
+        if(subject == null || subject.isEmpty() || "null".equalsIgnoreCase(subject.trim())){
+            throw new JwtException("Invalid token subject");
+        }
+
+        try{
+            return Long.parseLong(subject.trim());
+        } catch (NumberFormatException ex){
+            throw new JwtException("Invalid token subject: not a valid id", ex);
+        }
     }
 
     private Claims getPayload(String token) {

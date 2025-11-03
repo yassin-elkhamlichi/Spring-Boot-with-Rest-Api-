@@ -1,6 +1,7 @@
 package com.codewithmosh.store.filter;
 
 import com.codewithmosh.store.services.JwtService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,19 +30,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         var token = authHeader.replace("Bearer ", "");
-        if(!jwtService.validateToken(token)){
+        try{
+            if(!jwtService.validateToken(token)){
+                // token expired or otherwise invalid
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
+
+            Long userId = jwtService.getId(token);
+            System.out.println("userId = " + userId);
+            if(userId == null){
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token subject");
+                return;
+            }
+
+            var authentication = new UsernamePasswordAuthenticationToken(
+                    userId,
+                    null,
+                    null
+            );
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
-            return;
+        } catch (JwtException ex){
+            // invalid token (signature, parsing, subject, etc.)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         }
-        var authintication = new UsernamePasswordAuthenticationToken(
-                jwtService.getId(token),
-                null,
-                null
-        );
-        authintication.setDetails(
-                new WebAuthenticationDetailsSource().buildDetails(request)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authintication);
-        filterChain.doFilter(request, response);
     }
 }

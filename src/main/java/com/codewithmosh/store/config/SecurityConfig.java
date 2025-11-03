@@ -56,7 +56,7 @@ public class SecurityConfig {
                          .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                  .authorizeHttpRequests(auth -> auth
                          .requestMatchers("/carts/**").permitAll()
-                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                         .requestMatchers("/users").permitAll()
                          .requestMatchers("/auth/*").permitAll()
                          .requestMatchers("/swagger-ui.html").permitAll()
                          .requestMatchers("/error").permitAll()

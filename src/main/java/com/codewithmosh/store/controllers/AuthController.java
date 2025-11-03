@@ -42,8 +42,11 @@ public class AuthController {
                        authUserDto.getPassword()
                )
        );
-        var userDto = userMapper.toDto(userRepository.findByEmail(authUserDto.getEmail()).orElseThrow());
-        String token = jwtService.generateToken(userDto);
+        var user = userMapper.toDto(userRepository.findByEmail(authUserDto.getEmail()).orElseThrow());
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        String token = jwtService.generateToken(user);
         return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
