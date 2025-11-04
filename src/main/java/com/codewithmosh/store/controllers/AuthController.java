@@ -32,6 +32,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+
     @PostMapping("login")
     public ResponseEntity<JwtResponseDto> auth(
             @Valid @RequestBody AuthUserDto authUserDto
