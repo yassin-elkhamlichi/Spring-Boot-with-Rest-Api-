@@ -2073,8 +2073,72 @@ in the AuthController :
         return ResponseEntity.ok(userDto);
     }
 ```
-
 ---
+### Access Token & Refresh Token :
+when we generate token we should generate two tokens 
+the first name access token should be short to expire (5 to 10 min)
+and the second is  refresh token this is the token will send in the req when 
+the token access expire should be have long time to expire (7 to 30 days)
+so you should go to jwtService and write this : 
+
+```java
+public String generateAccessToken(UserDto userDto) {
+        long tokenExpiration = 300; // token well expires in 5min
+        return generateToken(userDto, tokenExpiration);
+    }
+
+    public String generateRefershToken(UserDto userDto) {
+        long tokenExpiration = 60480; // token well expires in 7d
+        return generateToken(userDto, tokenExpiration);
+
+    }
+
+    private String generateToken(UserDto userDto, long tokenExpiration) {
+        return Jwts.builder()
+                .subject(Long.toString(userDto.getId()))
+                .claim("email", userDto.getEmail())
+                .claim("name", userDto.getName())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .compact();
+    }
+```
+and in the authController you should add the refresh token in the cookie (not the normal cookie)
+this cookie is don't accessible for code javascript 
+to do this we should add some config :
+
+```java
+  @PostMapping("login")
+    public ResponseEntity<JwtResponseDto> auth(
+            @Valid @RequestBody AuthUserDto authUserDto,
+            HttpServletResponse response \\ add this  for add the cookie in the response
+
+    ) {
+        var user = userMapper.toDto(userRepository.findByEmail(authUserDto.getEmail()).orElse(null));
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authUserDto.getEmail(),
+                        authUserDto.getPassword()));
+
+        String accessToken = jwtService.generateAccessToken(user); //generate the access token
+        String refreshToken = jwtService.generateRefershToken(user); //generate the refresh token
+
+        var cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true); // make the cookie accessible just for http req
+        cookie.setPath("/auth/refresh");
+        cookie.setSecure(true); // just for https
+        cookie.setMaxAge(60480); // 7d
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(new JwtResponseDto(accessToken));
+    }
+```
+
+
  
 
 
