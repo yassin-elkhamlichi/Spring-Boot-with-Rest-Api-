@@ -13,8 +13,8 @@ import lombok.Data;
 @Data
 public class JwtConfig {
     private String secret;
-    private int tokenRExpiration;// token well expires in 7d || token refresh expiration
-    private int tokenAExpiration;/// token well expires in 5min
+    private int TimeOutR;
+    private int TimeOutA;
 
     public SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());

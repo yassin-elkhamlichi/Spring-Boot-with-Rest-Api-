@@ -19,12 +19,12 @@ public class JwtService {
     private final JwtConfig jwtConfig;
 
     public String generateAccessToken(UserDto userDto) {
-        return generateToken(userDto, jwtConfig.getTokenAExpiration());
+        return generateToken(userDto, jwtConfig.getTimeOutA());
     }
 
     public String generateRefershToken(UserDto userDto) {
 
-        return generateToken(userDto, jwtConfig.getTokenRExpiration());
+        return generateToken(userDto, jwtConfig.getTimeOutR());
 
     }
 
