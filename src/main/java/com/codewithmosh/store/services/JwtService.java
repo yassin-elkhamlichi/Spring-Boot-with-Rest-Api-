@@ -35,7 +35,7 @@ public class JwtService {
                 .claim("name", userDto.getName())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-                .signWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
+                .signWith(jwtConfig.getSecretKey())
                 .compact();
     }
 
@@ -65,7 +65,7 @@ public class JwtService {
 
     private Claims getPayload(String token) {
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .verifyWith(jwtConfig.getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
