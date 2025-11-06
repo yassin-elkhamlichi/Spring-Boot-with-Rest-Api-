@@ -1,28 +1,30 @@
 package com.codewithmosh.store.services;
 
+import com.codewithmosh.store.config.JwtConfig;
 import com.codewithmosh.store.dtos.UserDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.AllArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
 @Service
+@AllArgsConstructor
 public class JwtService {
-    @Value("${spring.jwt.secret}")
-    private String secret;
+    private final JwtConfig jwtConfig;
 
     public String generateAccessToken(UserDto userDto) {
-        long tokenExpiration = 300; // token well expires in 5min
-        return generateToken(userDto, tokenExpiration);
+        return generateToken(userDto, jwtConfig.getTokenAExpiration());
     }
 
     public String generateRefershToken(UserDto userDto) {
-        long tokenExpiration = 60480; // token well expires in 7d
-        return generateToken(userDto, tokenExpiration);
+
+        return generateToken(userDto, jwtConfig.getTokenRExpiration());
 
     }
 
@@ -33,7 +35,7 @@ public class JwtService {
                 .claim("name", userDto.getName())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .signWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
                 .compact();
     }
 

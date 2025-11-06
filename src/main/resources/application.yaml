@@ -13,3 +13,5 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   jwt:
     secret: ${JWT_SECRET}
+    TimeOutR: ${Refresh_Token_Expire}
+    TimeOutA: ${Access_Token_Expire}

@@ -1,5 +1,6 @@
 package com.codewithmosh.store.controllers;
 
+import com.codewithmosh.store.config.JwtConfig;
 import com.codewithmosh.store.dtos.AuthUserDto;
 import com.codewithmosh.store.dtos.JwtResponseDto;
 import com.codewithmosh.store.dtos.UserDto;
@@ -15,6 +16,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +34,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final JwtConfig jwtConfig;
 
     @PostMapping("login")
     public ResponseEntity<JwtResponseDto> auth(
@@ -39,6 +42,7 @@ public class AuthController {
             HttpServletResponse response
 
     ) {
+
         var user = userMapper.toDto(userRepository.findByEmail(authUserDto.getEmail()).orElse(null));
         if (user == null) {
             throw new UserNotFoundException();
@@ -55,7 +59,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath("/auth/refresh");
         cookie.setSecure(true);
-        cookie.setMaxAge(60480); // 7d
+        cookie.setMaxAge(jwtConfig.getTokenRExpiration()); // 7d
         response.addCookie(cookie);
 
         return ResponseEntity.ok(new JwtResponseDto(accessToken));

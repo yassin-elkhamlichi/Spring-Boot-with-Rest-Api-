@@ -2137,6 +2137,23 @@ to do this we should add some config :
         return ResponseEntity.ok(new JwtResponseDto(accessToken));
     }
 ```
+Instead of use  hardcoded like this **cookie.setMaxAge(60480)**
+we can save the variable in the .env to make it easy to change  
+and instead of write many variable in the class we can create class 
+content all the variable related with jwt : "JwtConfig" in the config file
+
+```java
+@Configuration
+@ConfigurationProperties(prefix = "spring.jwt")
+@Data
+public class JwtConfig {
+    private String secret;
+    private int tokenRExpiration;// token well expires in 7d || token refresh expiration
+    private int tokenAExpiration;/// token well expires in 5min
+
+}
+```
+
 
 
  
