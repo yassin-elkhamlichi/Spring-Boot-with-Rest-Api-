@@ -2153,6 +2153,26 @@ public class JwtConfig {
 
 }
 ```
+### Refreshing the token :
+to refresh the token we need add new method can refresh the token and get new token access 
+now i write the methode in the controller :
+
+```java
+@PostMapping("refresh")
+    public ResponseEntity<?> refresh(
+            @CookieValue(value = "refreshToken") String refreshToken) {
+        if (!jwtService.validateToken(refreshToken))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    Map.of("error", "the token is invalid"));
+        var userId = jwtService.getId(refreshToken);
+        var user = userRepository.findById(userId).orElseThrow();
+        var accessToken = jwtService.generateAccessToken(userMapper.toDto(user));
+        return ResponseEntity.ok(new JwtResponseDto(accessToken));
+
+    }
+```
+and dont forget add the token refresh as parameter in the http cookies in postman 
+
 
 
 
