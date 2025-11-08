@@ -1,5 +1,6 @@
 package com.codewithmosh.store.config;
 
+import com.codewithmosh.store.entities.Role;
 import com.codewithmosh.store.filter.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -59,12 +60,16 @@ public class SecurityConfig {
                                                 .requestMatchers("/auth/**").permitAll()
                                                 .requestMatchers("/swagger-ui.html").permitAll()
                                                 .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
                                                 .anyRequest().authenticated() // Change back to authenticated
                                 )
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                                .exceptionHandling(
-                                                c -> c.authenticationEntryPoint(
-                                                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+                                .exceptionHandling(c -> {
+                                        c.authenticationEntryPoint(
+                                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                                        c.accessDeniedHandler(((request, response, accessDeniedException) -> response
+                                                        .setStatus(HttpStatus.FORBIDDEN.value())));
+                                });
                 return http.build();
         }
 

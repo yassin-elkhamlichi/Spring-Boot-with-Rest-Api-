@@ -1,6 +1,7 @@
 package com.codewithmosh.store.services;
 
 import com.codewithmosh.store.config.JwtConfig;
+import com.codewithmosh.store.entities.Role;
 import com.codewithmosh.store.entities.User;
 
 import io.jsonwebtoken.Claims;
@@ -37,6 +38,10 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .signWith(jwtConfig.getSecretKey())
                 .compact();
+    }
+
+    public Role getRoleFromToken(String token) {
+        return Role.valueOf(getPayload(token).get("Role", String.class));
     }
 
     public boolean validateToken(String token) {

@@ -2211,6 +2211,125 @@ set the 'User' to new users :
   user.setRole(Role.USER);
 ```
 
+---
+#### Role based Authorization 
+
+first we should add this two exception hundler in the security config :
+
+```java
+ .exceptionHandling(c -> {
+                                        c.authenticationEntryPoint(
+                                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                                        c.accessDeniedHandler(((request, response, accessDeniedException) -> response
+                                                        .setStatus(HttpStatus.FORBIDDEN.value())));
+                                });
+```
+
+explaining for this two methods :
+
+### 🔐 1. `.authenticationEntryPoint(...)`
+
+```java
+c.authenticationEntryPoint(
+    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+);
+```
+
+#### ✅ **When is it triggered?**
+→ When an **unauthenticated user** tries to access a **protected endpoint**.
+
+#### 📌 Example:
+- You call `GET /admin/dashboard`  
+- But you **don’t send a JWT** (or send an invalid/expired one)  
+- Spring Security sees: “This user is **not logged in**, but the endpoint requires login.”
+
+#### 🎯 What does it do?
+- Sends a **401 Unauthorized** HTTP response.
+- **Does not redirect** to a login page (which is good for REST APIs!).
+- Clean, stateless response: just `401` + empty body (or you can customize it).
+
+> 💡 Without this, Spring Security would try to redirect to `/login` (which doesn’t make sense for an API).
+
+#### ✅ Why you use it:
+> To tell **unauthenticated users**: “You need to log in first (send a valid token).”
+
+---
+
+### 🔒 2. `.accessDeniedHandler(...)`
+
+```java
+c.accessDeniedHandler((request, response, accessDeniedException) -> 
+    response.setStatus(HttpStatus.FORBIDDEN.value())
+);
+```
+
+#### ✅ **When is it triggered?**
+→ When an **authenticated user** tries to access a resource they’re **not allowed to**.
+
+#### 📌 Example:
+- You’re logged in as a **regular user** (role: `USER`)
+- You call `DELETE /admin/users/123` (which requires `ADMIN` role)
+- Spring Security checks your role → **you don’t have permission**
+
+#### 🎯 What does it do?
+- Sends a **403 Forbidden** HTTP response.
+- Unlike 401, this means: “You’re logged in, but **you don’t have rights** to do this.”
+
+#### ✅ Why you use it:
+> To tell **authenticated but unauthorized users**: “You can’t do that — access denied.”
+
+---
+
+### 🆚 Key Difference: `401` vs `403`
+
+| Status | Meaning | Who? | Spring Security Trigger |
+|-------|--------|------|--------------------------|
+| **401 Unauthorized** | ❌ Not authenticated | Anonymous user | `AuthenticationEntryPoint` |
+| **403 Forbidden** | ✅ Authenticated, but ❌ not authorized | Logged-in user with insufficient privileges | `AccessDeniedHandler` |
+
+---
+
+### 🧠 Behind the Scenes
+
+Your config:
+
+```java
+.exceptionHandling(c -> {
+    c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+    c.accessDeniedHandler((req, res, ex) -> res.setStatus(HttpStatus.FORBIDDEN.value()));
+});
+```
+
+Tells Spring Security:
+
+> “When something goes wrong:
+> - If the user **isn’t logged in** → return **401**
+> - If the user **is logged in but lacks permission** → return **403**”
+
+---
+lets back to "Role based Authorization" :
+the first thing the admin should have controller 
+named AdminController
+and after this  you should add new autherization 
+```java
+ .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+```
+and after you should add method to get the role from token 
+we use it after in the jwtAuthenticationfilter 
+```java
+ public Role getRoleFromToken(String token) {
+        return Role.valueOf(getPayload(token).get("Role", String.class));
+    }
+```
+and finally we need add the authority in the jwtAuthenticationfilter
+```java
+ var role = jwtService.getRoleFromToken(token);
+
+ var authentication = new UsernamePasswordAuthenticationToken(
+         userId,
+         null,
+         List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+```
 
 
 

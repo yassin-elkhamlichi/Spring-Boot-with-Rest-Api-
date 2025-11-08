@@ -67,8 +67,4 @@ public class User {
                 "email = " + email + ")";
     }
 
-    public Object getRole() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRole'");
-    }
 }
