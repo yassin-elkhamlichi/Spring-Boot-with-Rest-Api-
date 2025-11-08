@@ -2419,10 +2419,27 @@ public class JwtService {
 
 }
 ```
-
-
- 
-
+### Logging out users :
+their two approaches to log out in jwt :
+1. Client_side logout : 
+->Delete the access token from memory of storage
+->Remove the refresh token(by clearing the cookie)
+->Simple to implement
+->Tokens are valid until they expire !!!!!!!!
+->Best for low-risk scenarios
+2. Server_side logout :
+->Store a list of active or removed tokens in a databases or cache
+->when a user logs out , mark their token as invalid
+->During each request,check if the token is blacklist
+->Provides a true logout experience
+->Adds complexity and require token look up on each request
+->Best for high-security apps
+---
+### Using Auth Providers :
+Instead of config security manully you can use Auth Providers like
+Auth0 , Amazon Cognito , firbase authentication , Okta (is a third part)
+this give you automatically use the feature like "email verification , password resets,account lockouts,social login ..."
+but you have the choice !!!!!
 
 
 
