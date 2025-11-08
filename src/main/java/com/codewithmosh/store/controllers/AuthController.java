@@ -53,23 +53,22 @@ public class AuthController {
                         authUserDto.getEmail(),
                         authUserDto.getPassword()));
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefershToken(user);
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefershToken(user);
 
-        var cookie = new Cookie("refreshToken", refreshToken);
+        var cookie = new Cookie("refreshToken", refreshToken.toString());
         cookie.setHttpOnly(true);
         cookie.setPath("/auth/refresh");
         cookie.setSecure(false);
         cookie.setMaxAge(jwtConfig.getTimeOutR()); // 7d
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new JwtResponseDto(accessToken));
+        return ResponseEntity.ok(new JwtResponseDto(accessToken.toString()));
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> me() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("####################" + authentication.getPrincipal());
         var id = (Long) authentication.getPrincipal();
         var user = userRepository.findById(id).orElse(null);
         if (user == null) {
@@ -81,13 +80,16 @@ public class AuthController {
     @PostMapping("refresh")
     public ResponseEntity<?> refresh(
             @CookieValue(value = "refreshToken") String refreshToken) {
-        if (!jwtService.validateToken(refreshToken))
+        var jwt = jwtService.parse(refreshToken);
+        if (!jwt.isValid())
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     Map.of("error", "the token is invalid"));
-        var userId = jwtService.getId(refreshToken);
+        var userId = jwt.getId();
         var user = userRepository.findById(userId).orElseThrow();
         var accessToken = jwtService.generateAccessToken(user);
-        return ResponseEntity.ok(new JwtResponseDto(accessToken));
+        System.out.println();
+        return ResponseEntity.ok(new JwtResponseDto(accessToken.toString()));
+
 
     }
 

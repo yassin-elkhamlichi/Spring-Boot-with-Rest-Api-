@@ -2330,7 +2330,95 @@ and finally we need add the authority in the jwtAuthenticationfilter
          null,
          List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 ```
+### Refactoring the JwtService : 
+instead of write all the code in the jwtService we can divise into 2 part
+part in the services/Jwt  class
+```java
+public class Jwt {
+    private final Claims claims;
+    private final SecretKey key;
 
+    public Jwt(Claims claims, SecretKey key) {
+        this.claims = claims;
+        this.key = key;
+    }
+
+    public boolean isValid() {
+        return claims.getExpiration().after(new Date());
+    }
+
+    public Role getRoleFromToken(String token) {
+        return Role.valueOf(claims.get("Role", String.class));
+    }
+
+    public Long getId() {
+        String subject = claims.getSubject();
+        // defensive checks: subject may be null, empty or the literal string "null"
+        if (subject == null || subject.isEmpty() || "null".equalsIgnoreCase(subject.trim())) {
+            throw new JwtException("Invalid token subject");
+        }
+
+        try {
+            return Long.parseLong(subject.trim());
+        } catch (NumberFormatException ex) {
+            throw new JwtException("Invalid token subject: not a valid id", ex);
+        }
+    }
+
+    public String toString() {
+        return Jwts.builder().claims(claims).signWith(key).compact();
+    }
+
+}
+```
+and the other part in the jwtServcie :
+```java
+
+@Service
+@AllArgsConstructor
+public class JwtService {
+    private final JwtConfig jwtConfig;
+
+    public Jwt generateAccessToken(User user) {
+        return generateToken(user, jwtConfig.getTimeOutA());
+    }
+
+    public Jwt generateRefershToken(User user) {
+        return generateToken(user, jwtConfig.getTimeOutR());
+    }
+
+    public Jwt generateToken(User user, long tokenExpiration) {
+        var claims = Jwts.claims()
+                .subject(Long.toString(user.getId()))
+                .add("email", user.getEmail())
+                .add("name", user.getName())
+                .add("Role", user.getRole())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+                .build();
+        return new Jwt(claims, (jwtConfig.getSecretKey()));
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(jwtConfig.getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public Jwt parse(String token) {
+        try {
+            Claims claims = getClaims(token);
+            return new Jwt(claims, jwtConfig.getSecretKey());
+        } catch (JwtException e) {
+            return null;
+        }
+
+    }
+
+}
+```
 
 
  

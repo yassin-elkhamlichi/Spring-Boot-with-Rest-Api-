@@ -30,27 +30,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         var token = authHeader.replace("Bearer ", "");
+        var jwt = jwtService.parse(token);
         try {
-            if (!jwtService.validateToken(token)) {
+            if (jwt == null || !jwt.isValid()) {
                 // token expired or otherwise invalid
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
                 return;
             }
 
-            Long userId = jwtService.getId(token);
+            Long userId = jwt.getId();
             System.out.println("userId = " + userId);
             if (userId == null) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token subject");
                 return;
             }
-            var role = jwtService.getRoleFromToken(token);
-
             var authentication = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + jwt.getRoleFromToken(token))));
             authentication.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);

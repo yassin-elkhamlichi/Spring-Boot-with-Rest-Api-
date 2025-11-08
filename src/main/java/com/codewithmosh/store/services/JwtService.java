@@ -7,73 +7,54 @@ import com.codewithmosh.store.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import lombok.AllArgsConstructor;
 
-import org.springframework.stereotype.Service;
-
 import java.util.Date;
+
+import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
 public class JwtService {
     private final JwtConfig jwtConfig;
 
-    public String generateAccessToken(User user) {
+    public Jwt generateAccessToken(User user) {
         return generateToken(user, jwtConfig.getTimeOutA());
     }
 
-    public String generateRefershToken(User user) {
-
+    public Jwt generateRefershToken(User user) {
         return generateToken(user, jwtConfig.getTimeOutR());
-
     }
 
-    private String generateToken(User user, long tokenExpiration) {
-        return Jwts.builder()
+    public Jwt generateToken(User user, long tokenExpiration) {
+        var claims = Jwts.claims()
                 .subject(Long.toString(user.getId()))
-                .claim("email", user.getEmail())
-                .claim("name", user.getName())
-                .claim("Role", user.getRole())
+                .add("email", user.getEmail())
+                .add("name", user.getName())
+                .add("Role", user.getRole())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-                .signWith(jwtConfig.getSecretKey())
-                .compact();
+                .build();
+        return new Jwt(claims, (jwtConfig.getSecretKey()));
     }
 
-    public Role getRoleFromToken(String token) {
-        return Role.valueOf(getPayload(token).get("Role", String.class));
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            var claims = getPayload(token);
-            return claims.getExpiration().after(new Date());
-        } catch (JwtException e) {
-            throw new JwtException(e.getMessage());
-        }
-    }
-
-    public Long getId(String token) {
-        var claims = getPayload(token);
-        String subject = claims.getSubject();
-        // defensive checks: subject may be null, empty or the literal string "null"
-        if (subject == null || subject.isEmpty() || "null".equalsIgnoreCase(subject.trim())) {
-            throw new JwtException("Invalid token subject");
-        }
-
-        try {
-            return Long.parseLong(subject.trim());
-        } catch (NumberFormatException ex) {
-            throw new JwtException("Invalid token subject: not a valid id", ex);
-        }
-    }
-
-    private Claims getPayload(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(jwtConfig.getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public Jwt parse(String token) {
+        try {
+            Claims claims = getClaims(token);
+            return new Jwt(claims, jwtConfig.getSecretKey());
+        } catch (JwtException e) {
+            return null;
+        }
+
     }
 
 }
