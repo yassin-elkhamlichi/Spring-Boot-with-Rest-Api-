@@ -44,7 +44,7 @@ public class AuthController {
 
     ) {
 
-        var user = userMapper.toDto(userRepository.findByEmail(authUserDto.getEmail()).orElse(null));
+        var user = userRepository.findByEmail(authUserDto.getEmail()).orElse(null);
         if (user == null) {
             throw new UserNotFoundException();
         }
@@ -86,7 +86,7 @@ public class AuthController {
                     Map.of("error", "the token is invalid"));
         var userId = jwtService.getId(refreshToken);
         var user = userRepository.findById(userId).orElseThrow();
-        var accessToken = jwtService.generateAccessToken(userMapper.toDto(user));
+        var accessToken = jwtService.generateAccessToken(user);
         return ResponseEntity.ok(new JwtResponseDto(accessToken));
 
     }

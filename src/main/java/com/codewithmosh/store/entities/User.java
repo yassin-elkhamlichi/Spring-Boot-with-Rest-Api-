@@ -2,7 +2,6 @@ package com.codewithmosh.store.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.sql.results.graph.EntityGraphTraversalState;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,13 +30,17 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, orphanRemoval = true)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
 
     public void addAddress(Address address) {
         addresses.add(address);
-        address .setUser(this);
+        address.setUser(this);
     }
 
     public void removeAddress(Address address) {
@@ -45,15 +48,11 @@ public class User {
         address.setUser(null);
     }
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE)
-//    private Profile profile;
+    // @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE)
+    // private Profile profile;
 
     @ManyToMany
-    @JoinTable(
-        name = "wishlist",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
+    @JoinTable(name = "wishlist", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
     private Set<Product> favoriteProducts = new HashSet<>();
 
     public void addFavoriteProduct(Product product) {
@@ -66,5 +65,10 @@ public class User {
                 "id = " + id + ", " +
                 "name = " + name + ", " +
                 "email = " + email + ")";
+    }
+
+    public Object getRole() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRole'");
     }
 }

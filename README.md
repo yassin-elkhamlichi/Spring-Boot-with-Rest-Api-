@@ -2171,7 +2171,11 @@ now i write the methode in the controller :
 
     }
 ```
-and dont forget add the token refresh as parameter in the http cookies in postman 
+and don t forget add the token refresh as parameter in the http cookies in postman 
+
+---
+### Adding Role To Users :
+
 
 
 

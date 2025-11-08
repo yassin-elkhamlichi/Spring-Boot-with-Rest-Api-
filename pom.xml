@@ -147,8 +147,8 @@
                 <version>10.15.0</version>
                 <configuration>
                     <url>jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&amp;allowPublicKeyRetrieval=true</url>
-                    <user>{USER_NAME}</user>
-                    <password>{PASSWORD}</password>
+                    <user>user</user>
+                    <password>Yassin@4545</password>
                     <cleanDisabled>false</cleanDisabled>
                 </configuration>
             </plugin>
