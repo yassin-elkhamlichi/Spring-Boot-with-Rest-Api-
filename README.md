@@ -2175,7 +2175,41 @@ and don t forget add the token refresh as parameter in the http cookies in postm
 
 ---
 ### Adding Role To Users :
+we need to divise users to ADMIN or User.
+In the big Application we should add new table named Roles but in small project no need it we can just
+add column in user table this is the first step 
+and the second step is add the Role enum in the entities package :
+```java
 
+public enum Role {
+    USER,
+    ADMIN
+}
+``` 
+and add field Role in the User entity 
+```java
+ @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+```
+and after this  you should go to the jwt service to insert this Role 
+in json web token 
+```java
+  return Jwts.builder()
+                .subject(Long.toString(user.getId()))
+                .claim("email", user.getEmail())
+                .claim("name", user.getName())
+                .claim("Role", user.getRole())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+                .signWith(jwtConfig.getSecretKey())
+                .compact();
+```
+andd finally you should go  to userController and in the registerUser
+set the 'User' to new users :
+```java
+  user.setRole(Role.USER);
+```
 
 
 
