@@ -19,7 +19,7 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    @Column(name = "created_at")
+    @Column(name = "created_at" , insertable = false , updatable = false)
     private LocalDateTime orderDate;
     @Column(name = "total_price")
     private Double totalAmount;
