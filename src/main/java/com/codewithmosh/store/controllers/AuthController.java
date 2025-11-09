@@ -89,8 +89,6 @@ public class AuthController {
         var accessToken = jwtService.generateAccessToken(user);
         System.out.println();
         return ResponseEntity.ok(new JwtResponseDto(accessToken.toString()));
-
-
     }
 
     @ExceptionHandler(BadCredentialsException.class)

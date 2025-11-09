@@ -38,6 +38,9 @@ public class User {
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private  List<Orders> orders = new ArrayList<>();
+
     public void addAddress(Address address) {
         addresses.add(address);
         address.setUser(this);
