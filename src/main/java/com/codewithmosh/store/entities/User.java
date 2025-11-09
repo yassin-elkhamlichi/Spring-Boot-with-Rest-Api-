@@ -39,6 +39,7 @@ public class User {
     private List<Address> addresses = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private  List<Orders> orders = new ArrayList<>();
 
     public void addAddress(Address address) {

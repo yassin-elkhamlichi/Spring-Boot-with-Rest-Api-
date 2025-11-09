@@ -29,10 +29,10 @@ public class Orders {
 
 
     @JoinColumn(name = "customer_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
     private User user;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order" , cascade = CascadeType.ALL , orphanRemoval = true)
     private List<Order_items> order_items;
 }
