@@ -1,25 +1,27 @@
 package com.codewithmosh.store.controllers;
 
 import com.codewithmosh.store.dtos.AddItemToOrderDto;
-import com.codewithmosh.store.dtos.CartProductDto;
 import com.codewithmosh.store.dtos.ItemCartDto;
 import com.codewithmosh.store.dtos.OrderDto;
 import com.codewithmosh.store.entities.Orders;
-import com.codewithmosh.store.entities.Product;
 import com.codewithmosh.store.entities.Status;
+import com.codewithmosh.store.exception.OrderNotFoundException;
+import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
 import com.codewithmosh.store.repositories.ItemOrderRepository;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
 import com.codewithmosh.store.repositories.ProductRepository;
 import com.codewithmosh.store.repositories.UserRepository;
+import com.codewithmosh.store.services.OrderService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -32,6 +34,7 @@ public class OrdersController {
     private OrderMapper orderMapper;
     private Order_itemsMapper order_itemsMapper;
     private ProductRepository productRepository;
+    private OrderService orderService;
 
     @GetMapping
     public List<OrderDto> getAllOrders(
@@ -54,37 +57,29 @@ public class OrdersController {
         ordersRepositroy.save(order);
         return ResponseEntity.ok(orderMapper.toDto(order));
     }
+
     @PostMapping("{idOrder}/item")
     public ResponseEntity<ItemCartDto> addItemtoOrder(
             @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @RequestBody AddItemToOrderDto data
     ){
-        var order = ordersRepositroy.findById(idOrder).orElse(null);
-        var item = order_itemsMapper.toEntity(data);
-        Product product = productRepository.findById(data.getProductId()).orElse(null);
-        if(order == null){
-            return ResponseEntity.notFound().build();
-        }
-        if (product == null){
-            return ResponseEntity.notFound().build();
-        }
-        if(!itemOrderRepository.existsByProductId(data.getProductId())){
-            item.setOrder(order);
-            order.getOrder_items().add(item);
-            item.setQuantity(1);
-            item.setProduct(product);
-        }
-        else {
-            int quantity = item.getQuantity() + 1;
-            order.getOrder_items().forEach(
-                    item1 -> {
-                        if (item.getProduct() == item1.getProduct())
-                            item.setQuantity(quantity);
-                    }
-            );
-        }
-        itemOrderRepository.save(item);
-        return ResponseEntity.ok(order_itemsMapper.toDto(item));
+
+        var orderItemdDto = orderService.addItemInOrder(data,idOrder);
+
+        return ResponseEntity.ok(orderItemdDto);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleOrderException(){
+        return ResponseEntity.status(404).body(
+                Map.of("error" , "Order not found")
+        );
+    }
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleProductException(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("error" , "Product not found")
+        );
     }
 }

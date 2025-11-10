@@ -3,6 +3,8 @@ package com.codewithmosh.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @AllArgsConstructor
@@ -17,11 +19,11 @@ public class Order_items {
     @Column(name = "id")
     private Long id;
     @Column(name = "unit_price")
-    private float unit_price;
+    private BigDecimal unit_price;
     @Column(name = "quantity")
     private int quantity;
     @Column(name = "total_price")
-    private float total_amount;
+    private BigDecimal total_amount;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -32,7 +34,6 @@ public class Order_items {
     @JoinColumn(name = "product_id")
     @ToString.Exclude
     private Product product;
-
 
 }
 
