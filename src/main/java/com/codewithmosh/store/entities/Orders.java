@@ -79,4 +79,10 @@ public class Orders {
         updateTotalAmount(quantity, order_items);
         return order_items;
     }
+
+    public void removeItemOrder(Long idProduct){
+        Order_items item = getItemOrder(idProduct);
+        getOrder_items().remove(item);
+    }
+
 }

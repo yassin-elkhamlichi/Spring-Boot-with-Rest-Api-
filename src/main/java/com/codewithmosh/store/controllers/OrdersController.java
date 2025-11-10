@@ -64,17 +64,43 @@ public class OrdersController {
         return ResponseEntity.ok(orderItemDto);
     }
 
-    @PostMapping("{idOrder}/item/{idItem}")
+    @PutMapping("{idOrder}/item/{idItem}")
     public ResponseEntity<ItemCartDto> updateItemInOrder(
             @PathVariable Long idUser,
             @PathVariable Long idOrder,
-            @PathVariable Long idItem,
+            @PathVariable Long idProduct,
             @RequestBody UpdateItemInOrder data
     ){
-        var orderItemDto = orderService.updateItemInOrder(data,idOrder,idItem);
+        var orderItemDto = orderService.updateItemInOrder(data,idOrder,idProduct);
         return ResponseEntity.ok(orderItemDto);
     }
 
+    @DeleteMapping("{idOrder}/item/{idProduct}")
+    public ResponseEntity<Void> deleteItemFromOrder(
+            @PathVariable Long idUser,
+            @PathVariable Long idOrder,
+            @PathVariable Long idProduct
+    ){
+        orderService.deleteItemFromOrder(idOrder,idProduct);
+        return ResponseEntity.noContent().build();
+    }
+    @DeleteMapping("{idOrder}")
+    public ResponseEntity<Void> deleteOrder(
+            @PathVariable Long idUser,
+            @PathVariable Long idOrder
+    ){
+        orderService.deleteOrder(idOrder);
+        return ResponseEntity.noContent().build();
+    }
+    @PostMapping("{idOrder}/status")
+    public ResponseEntity<OrderDto> changeStatus(
+            @PathVariable Long idUser,
+            @PathVariable Long idOrder,
+            @RequestBody Status status
+    ){
+        OrderDto orderdto = orderService.changeStatus(idOrder,status);
+        return ResponseEntity.ok(orderdto);
+    }
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<Map<String,String>> handleOrderException(){
         return ResponseEntity.status(404).body(
