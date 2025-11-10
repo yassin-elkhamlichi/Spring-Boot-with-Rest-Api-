@@ -3,8 +3,8 @@ package com.codewithmosh.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -35,4 +35,48 @@ public class Orders {
 
     @OneToMany(mappedBy = "order" , cascade = CascadeType.ALL , orphanRemoval = true)
     private List<Order_items> order_items;
+
+    public void updateQuantityinItem(int quantity, Order_items item) {
+        getOrder_items().forEach(
+                item1 -> {
+                    if (item.getProduct().getId().equals(item.getProduct().getId())) {
+                        item.setQuantity(quantity);
+                    }
+                });
+    }
+
+    public void updateTotalAmount(int quantity ,Order_items item) {
+        getOrder_items().forEach(
+                item1 -> {
+                    if (item.getProduct().getId().equals(item.getProduct().getId())) {
+                        item.setTotal_amount(item.getUnit_price().multiply(BigDecimal.valueOf(quantity)));
+                    }
+                });
+    }
+
+    public Order_items getItemOrder(Long productId){
+        return getOrder_items().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Order_items addToOrder(Product product) {
+        var order_items = getItemOrder(product.getId());
+        int quantity = 1;
+        if (order_items != null) {
+            quantity = order_items.getQuantity() + 1;
+        } else {
+            order_items = Order_items.builder()
+                    .product(product)
+                    .order(this)
+                    .build();
+            order_items.setUnit_price(product.getPrice());
+            getOrder_items().add(order_items);
+            order_items.setQuantity(quantity);
+        }
+        updateQuantityinItem(quantity, order_items);
+        updateTotalAmount(quantity, order_items);
+        return order_items;
+    }
 }

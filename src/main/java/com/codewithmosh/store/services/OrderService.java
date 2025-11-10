@@ -2,7 +2,10 @@ package com.codewithmosh.store.services;
 
 import com.codewithmosh.store.dtos.AddItemToOrderDto;
 import com.codewithmosh.store.dtos.ItemCartDto;
+import com.codewithmosh.store.dtos.UpdateItemInOrder;
 import com.codewithmosh.store.entities.Order_items;
+import com.codewithmosh.store.entities.Orders;
+import com.codewithmosh.store.exception.ItemNotFoundException;
 import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
@@ -33,54 +36,34 @@ public class OrderService {
         if (order == null) {
             throw new OrderNotFoundException();
         }
-        Order_items order_items ;
 
-        int quantity = 1;
-        if (itemOrderRepository.existsByProductId(data.getProductId())) {
-            if(itemOrderRepository.existsByOrderId(idOrder)) {
-                order_items = itemOrderRepository.findByProductIdAndOrderId(data.getProductId(), idOrder);
-                quantity = order_items.getQuantity() + 1;
-                int finalQuantity = quantity;
-                order.getOrder_items().forEach(
-                        item -> {
-                            if (item.getProduct().getId().equals(data.getProductId())) {
-                                item.setQuantity(finalQuantity);
-                            }
-                        }
-                );
-            }else{
-                order_items = Order_items.builder()
-                        .product(product)
-                        .order(order)
-                        .build();
-                order.getOrder_items().add(order_items);
-            }
-        } else {
-            order_items = Order_items.builder()
-                    .product(product)
-                    .order(order)
-                    .build();
-            order.getOrder_items().add(order_items);
-        }
-        order_items.setUnit_price(product.getPrice());
-        BigDecimal price = BigDecimal.ZERO;
-        price = order_items.getUnit_price().multiply(BigDecimal.valueOf(quantity));
-        order_items.setQuantity(quantity);
-        order_items.setTotal_amount(price);
-        BigDecimal finalPrice = price;
-        if(!order.getOrder_items().isEmpty()){
-            order.getOrder_items().forEach(
-                    item->{
-                        if(item.getProduct().getId().equals(data.getProductId())){
-                            item.setQuantity(order_items.getQuantity());
-                            item.setTotal_amount(finalPrice);
-                        }
-                    });
-        }
+        Order_items order_items = order.addToOrder(product) ;
+
+        var orderItemDto = order_itemsMapper.toDto(order_items);
+        orderItemDto.setTotalPrice(order_items.getTotal_amount());
+        orderItemDto.getProduct().setProductId(order_items.getProduct().getId());
         ordersRepositroy.save(order);
-        var orderItemdDto = order_itemsMapper.toDto(order_items);
-        orderItemdDto.setTotalPrice(price);
-        orderItemdDto.getProduct().setProductId(data.getProductId());
+
+        return orderItemDto;
+    }
+
+    public ItemCartDto updateItemInOrder(UpdateItemInOrder data, Long idOrder, Long idItem) {
+        Order_items item = itemOrderRepository.findById(idItem).orElse(null);
+        if (item == null) {
+            throw new ItemNotFoundException();
+        }
+        Orders order = ordersRepositroy.findById(idOrder).orElse(null);
+        if (order == null) {
+            throw new OrderNotFoundException();
+        }
+        item.setQuantity(data.getQuantity());
+        item.setTotal_amount(item.getUnit_price().multiply(BigDecimal.valueOf(data.getQuantity())));
+        order.updateQuantityinItem(data.getQuantity(),item);
+        order.updateTotalAmount(data.getQuantity(),item);
+        ordersRepositroy.save(order);
+        var orderItemdDto = order_itemsMapper.toDto(item);
+        orderItemdDto.setTotalPrice(item.getTotal_amount());
+        orderItemdDto.getProduct().setProductId(item.getProduct().getId());
         return orderItemdDto;
     }
 }

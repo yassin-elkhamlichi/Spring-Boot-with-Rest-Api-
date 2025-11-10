@@ -3,15 +3,14 @@ package com.codewithmosh.store.controllers;
 import com.codewithmosh.store.dtos.AddItemToOrderDto;
 import com.codewithmosh.store.dtos.ItemCartDto;
 import com.codewithmosh.store.dtos.OrderDto;
+import com.codewithmosh.store.dtos.UpdateItemInOrder;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.entities.Status;
+import com.codewithmosh.store.exception.ItemNotFoundException;
 import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
-import com.codewithmosh.store.mappers.Order_itemsMapper;
-import com.codewithmosh.store.repositories.ItemOrderRepository;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
-import com.codewithmosh.store.repositories.ProductRepository;
 import com.codewithmosh.store.repositories.UserRepository;
 import com.codewithmosh.store.services.OrderService;
 import lombok.AllArgsConstructor;
@@ -29,11 +28,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class OrdersController {
     private final OrdersRepositroy ordersRepositroy;
-    private final ItemOrderRepository itemOrderRepository;
     private final UserRepository userRepository;
     private OrderMapper orderMapper;
-    private Order_itemsMapper order_itemsMapper;
-    private ProductRepository productRepository;
     private OrderService orderService;
 
     @GetMapping
@@ -59,15 +55,24 @@ public class OrdersController {
     }
 
     @PostMapping("{idOrder}/item")
-    public ResponseEntity<ItemCartDto> addItemtoOrder(
+    public ResponseEntity<ItemCartDto> addItemToOrder(
             @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @RequestBody AddItemToOrderDto data
     ){
+        var orderItemDto = orderService.addItemInOrder(data,idOrder);
+        return ResponseEntity.ok(orderItemDto);
+    }
 
-        var orderItemdDto = orderService.addItemInOrder(data,idOrder);
-
-        return ResponseEntity.ok(orderItemdDto);
+    @PostMapping("{idOrder}/item/{idItem}")
+    public ResponseEntity<ItemCartDto> updateItemInOrder(
+            @PathVariable Long idUser,
+            @PathVariable Long idOrder,
+            @PathVariable Long idItem,
+            @RequestBody UpdateItemInOrder data
+    ){
+        var orderItemDto = orderService.updateItemInOrder(data,idOrder,idItem);
+        return ResponseEntity.ok(orderItemDto);
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
@@ -80,6 +85,12 @@ public class OrdersController {
     public ResponseEntity<Map<String,String>> handleProductException(){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("error" , "Product not found")
+        );
+    }
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleItemException(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("error" , "item not found")
         );
     }
 }

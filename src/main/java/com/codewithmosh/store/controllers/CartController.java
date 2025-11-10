@@ -1,9 +1,10 @@
 package com.codewithmosh.store.controllers;
 
-import com.codewithmosh.store.dtos.*;
-import com.codewithmosh.store.entities.Cart;
+import com.codewithmosh.store.dtos.AddItemToCartReqeustDto;
+import com.codewithmosh.store.dtos.CartDto;
+import com.codewithmosh.store.dtos.CartProductUpdateDto;
+import com.codewithmosh.store.dtos.ItemCartDto;
 import com.codewithmosh.store.exception.CartNotFoundException;
-import com.codewithmosh.store.exception.ItemNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.mappers.CartMapper;
 import com.codewithmosh.store.repositories.CartRepository;
@@ -19,7 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Map;
+import java.util.UUID;
 
 @Data
 @RestController
@@ -97,11 +99,5 @@ public class CartController {
         );
     }
 
-    @ExceptionHandler(ItemNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleItemException(){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("error" , "Item not found in the cart")
-        );
-    }
 
 }
