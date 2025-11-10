@@ -50,7 +50,7 @@ public class OrderService {
     public ItemCartDto updateItemInOrder(UpdateItemInOrder data, Long idOrder, Long idItem) {
         Order_items item = itemOrderRepository.findById(idItem).orElse(null);
         if (item == null) {
-            throw new ItemNotFoundException();
+            throw new ItemNotFoundException()the or;
         }
         Orders order = ordersRepositroy.findById(idOrder).orElse(null);
         if (order == null) {
