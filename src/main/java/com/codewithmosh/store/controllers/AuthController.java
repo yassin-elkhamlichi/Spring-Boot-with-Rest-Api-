@@ -4,11 +4,14 @@ import com.codewithmosh.store.config.JwtConfig;
 import com.codewithmosh.store.dtos.AuthUserDto;
 import com.codewithmosh.store.dtos.JwtResponseDto;
 import com.codewithmosh.store.dtos.UserDto;
+import com.codewithmosh.store.entities.User;
 import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.UserMapper;
 import com.codewithmosh.store.repositories.UserRepository;
+import com.codewithmosh.store.services.AuthService;
 import com.codewithmosh.store.services.JwtService;
 
+import com.codewithmosh.store.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -36,6 +39,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JwtConfig jwtConfig;
+    private final AuthService authService;
 
     @PostMapping("login")
     public ResponseEntity<JwtResponseDto> auth(
@@ -68,12 +72,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> me() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var id = (Long) authentication.getPrincipal();
-        var user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
+        User user = authService.getCurrentUser();
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 

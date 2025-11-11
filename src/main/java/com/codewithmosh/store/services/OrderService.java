@@ -5,10 +5,7 @@ import com.codewithmosh.store.entities.Order_items;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.entities.Status;
 import com.codewithmosh.store.entities.User;
-import com.codewithmosh.store.exception.CartNotFoundException;
-import com.codewithmosh.store.exception.OrderNotFoundException;
-import com.codewithmosh.store.exception.ProductNotFoundException;
-import com.codewithmosh.store.exception.UserNotFoundException;
+import com.codewithmosh.store.exception.*;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
 import com.codewithmosh.store.repositories.*;
@@ -33,6 +30,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
+    private final AuthService authService;
 
 
     public ItemCartDto addItemInOrder(AddItemToOrderDto data,Long idOrder){
@@ -101,12 +99,12 @@ public class OrderService {
         ordersRepositroy.delete(order);
     }
 
-    public OrderDto changeStatus(Long idOrder, String status , Long idUser) {
+    public OrderDto changeStatus(Long idOrder, String status ) {
         Orders order = ordersRepositroy.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
-        User user = userRepository.findById(idUser).orElse(null);
+        User user = authService.getCurrentUser();
         if(user == null) {
             throw new UserNotFoundException();
         }
@@ -115,10 +113,13 @@ public class OrderService {
         return orderMapper.toDto(order);
     }
 
-    public OrderDto CheckingOut(CheckoutDto data , Long idUser) {
+    public CheckOutResponseDto CheckingOut(CheckOutRequestDto data) {
         var cart = cartRepository.findById(data.getCartId()).orElse(null);
-        if(cart == null || cart.getItemCart().isEmpty()){
+        if(cart == null ){
             throw new CartNotFoundException();
+        }
+        if(cart.getItemCart().isEmpty()){
+            throw new CartEmptyException();
         }
         Orders order = Orders.builder()
                 .order_items(new ArrayList<>())
@@ -135,15 +136,12 @@ public class OrderService {
             order.getOrder_items().add(itemOrder);
         }
         );
-        var user = userRepository.findById(idUser).orElse(null);
-        if(user == null){
-            throw new UserNotFoundException();
-        }
+        var user =authService.getCurrentUser();
         order.setUser(user);
         order.setStatus(Status.PENDING);
         order.setTotalAmount(cart.getTotalPrice().doubleValue());
         ordersRepositroy.save(order);
         cartRepository.delete(cart);
-        return orderMapper.toDto(order);
+        return new CheckOutResponseDto(order.getId());
     }
 }

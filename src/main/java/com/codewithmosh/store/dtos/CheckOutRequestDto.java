@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class CheckoutDto {
-    @NotNull(message = "CartId is required")
-    private UUID CartId;
+public class CheckOutRequestDto {
+    @NotNull(message = "Cart id is required")
+    private UUID cartId;
 }

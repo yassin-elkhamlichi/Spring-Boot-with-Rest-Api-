@@ -11,6 +11,7 @@ import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
 import com.codewithmosh.store.repositories.UserRepository;
+import com.codewithmosh.store.services.AuthService;
 import com.codewithmosh.store.services.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,48 +24,37 @@ import java.util.Map;
 
 
 @RestController
-@RequestMapping("{idUser}/orders")
+@RequestMapping("orders")
 @AllArgsConstructor
 public class OrdersController {
     private final OrdersRepositroy ordersRepositroy;
-    private final UserRepository userRepository;
+    private final AuthService authService;
     private OrderMapper orderMapper;
     private OrderService orderService;
-    private CartRepository cartRepository;
+
 
     @GetMapping
     public List<OrderDto> getAllOrders(
-            @PathVariable Long idUser
     ){
         return ordersRepositroy.findAll()
                 .stream()
                 .map(orderMapper::toDto)
                 .toList();
     }
-    @PostMapping("Checkout")
-    public ResponseEntity<OrderDto> Checkout(
-            @PathVariable Long idUser,
-            @RequestBody CheckoutDto data
-    ){
-        OrderDto orderDto = orderService.CheckingOut(data,idUser);
-        return ResponseEntity.ok(orderDto);
-    }
     @PostMapping
     public ResponseEntity<OrderDto> CreateOrder(
-            @PathVariable Long idUser
     ){
         Orders order = new Orders();
         order.setStatus(Status.PENDING);
         order.setTotalAmount(0.0);
         order.setOrderDate(LocalDateTime.now());
-        order.setUser(userRepository.findById(idUser).orElse(null));
+        order.setUser(authService.getCurrentUser());
         ordersRepositroy.save(order);
         return ResponseEntity.ok(orderMapper.toDto(order));
     }
 
     @PostMapping("{idOrder}/item")
     public ResponseEntity<ItemCartDto> addItemToOrder(
-            @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @RequestBody AddItemToOrderDto data
     ){
@@ -74,7 +64,6 @@ public class OrdersController {
 
     @PutMapping("{idOrder}/item/{idProduct}")
     public ResponseEntity<ItemCartDto> updateItemInOrder(
-            @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @PathVariable Long idProduct,
             @RequestBody UpdateItemInOrder data
@@ -85,7 +74,6 @@ public class OrdersController {
 
     @DeleteMapping("{idOrder}/item/{idProduct}")
     public ResponseEntity<Void> deleteItemFromOrder(
-            @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @PathVariable Long idProduct
     ){
@@ -94,7 +82,6 @@ public class OrdersController {
     }
     @DeleteMapping("{idOrder}")
     public ResponseEntity<Void> deleteOrder(
-            @PathVariable Long idUser,
             @PathVariable Long idOrder
     ){
         orderService.deleteOrder(idOrder);
@@ -102,11 +89,10 @@ public class OrdersController {
     }
     @PostMapping("{idOrder}/status")
     public ResponseEntity<OrderDto> changeStatusForOrder(
-            @PathVariable Long idUser,
             @PathVariable Long idOrder,
             @RequestBody OrderStatusUpdateDto statusUpdate
     ){
-        OrderDto orderdto = orderService.changeStatus(idOrder,statusUpdate.getStatus().toString(),idUser);
+        OrderDto orderdto = orderService.changeStatus(idOrder,statusUpdate.getStatus().toString());
         return ResponseEntity.ok(orderdto);
     }
     @ExceptionHandler(OrderNotFoundException.class)
