@@ -1,9 +1,7 @@
 package com.codewithmosh.store.controllers;
 
-import com.codewithmosh.store.entities.Order_items;
-import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.repositories.ItemOrderRepository;
-import com.codewithmosh.store.repositories.OrdersRepositroy;
+import com.codewithmosh.store.repositories.OrdersRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/orderssss")
 @AllArgsConstructor
 public class ItemOrdersController {
-    private final OrdersRepositroy ordersRepositroy;
+    private final OrdersRepository ordersRepository;
     private final ItemOrderRepository itemOrderRepository;
     @GetMapping
     public ResponseEntity<?> getAllOrders(){
-        var orders = ordersRepositroy.findAll().toArray();
+        var orders = ordersRepository.findAll().toArray();
         if(orders == null){
             return ResponseEntity.notFound().build();
         }

@@ -8,9 +8,7 @@ import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
-import com.codewithmosh.store.repositories.CartRepository;
-import com.codewithmosh.store.repositories.OrdersRepositroy;
-import com.codewithmosh.store.repositories.UserRepository;
+import com.codewithmosh.store.repositories.OrdersRepository;
 import com.codewithmosh.store.services.AuthService;
 import com.codewithmosh.store.services.OrderService;
 import lombok.AllArgsConstructor;
@@ -27,7 +25,7 @@ import java.util.Map;
 @RequestMapping("orders")
 @AllArgsConstructor
 public class OrdersController {
-    private final OrdersRepositroy ordersRepositroy;
+    private final OrdersRepository ordersRepository;
     private final AuthService authService;
     private OrderMapper orderMapper;
     private OrderService orderService;
@@ -36,10 +34,9 @@ public class OrdersController {
     @GetMapping
     public List<OrderDto> getAllOrders(
     ){
-        return ordersRepositroy.findAll()
-                .stream()
-                .map(orderMapper::toDto)
-                .toList();
+        var user = authService.getCurrentUser();
+        List<Orders> orders = ordersRepository.getAllByUser(user);
+        return orders.stream().map(orderMapper::toDto).toList();
     }
     @PostMapping
     public ResponseEntity<OrderDto> CreateOrder(
@@ -49,7 +46,7 @@ public class OrdersController {
         order.setTotalAmount(0.0);
         order.setOrderDate(LocalDateTime.now());
         order.setUser(authService.getCurrentUser());
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
         return ResponseEntity.ok(orderMapper.toDto(order));
     }
 

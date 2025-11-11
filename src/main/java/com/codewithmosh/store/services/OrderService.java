@@ -10,14 +10,10 @@ import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
 import com.codewithmosh.store.repositories.*;
 import lombok.AllArgsConstructor;
-import org.hibernate.query.Order;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -25,7 +21,7 @@ public class OrderService {
 
     private final ProductRepository productRepository;
     private final ItemOrderRepository itemOrderRepository;
-    private final OrdersRepositroy ordersRepositroy;
+    private final OrdersRepository ordersRepository;
     private final Order_itemsMapper order_itemsMapper;
     private final OrderMapper orderMapper;
     private final UserRepository userRepository;
@@ -38,7 +34,7 @@ public class OrderService {
         if (product == null) {
            throw new ProductNotFoundException();
         }
-        var order = ordersRepositroy.findById(idOrder).orElse(null);
+        var order = ordersRepository.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
@@ -48,7 +44,7 @@ public class OrderService {
         var orderItemDto = order_itemsMapper.toDto(order_items);
         orderItemDto.setTotalPrice(order_items.getTotal_amount());
         orderItemDto.getProduct().setProductId(order_items.getProduct().getId());
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
 
         return orderItemDto;
     }
@@ -58,7 +54,7 @@ public class OrderService {
         if (product == null) {
             throw new ProductNotFoundException();
         }
-        Orders order = ordersRepositroy.findById(idOrder).orElse(null);
+        Orders order = ordersRepository.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
@@ -70,7 +66,7 @@ public class OrderService {
         order.updateQuantityinItem(data.getQuantity(),item);
         order.updateTotalAmount(data.getQuantity(),item);
 
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
 
         var orderItemdDto = order_itemsMapper.toDto(item);
         orderItemdDto.setTotalPrice(item.getTotal_amount());
@@ -83,24 +79,24 @@ public class OrderService {
         if (product == null) {
             throw new ProductNotFoundException();
         }
-        Orders order = ordersRepositroy.findById(idOrder).orElse(null);
+        Orders order = ordersRepository.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
         order.removeItemOrder(idProduct);
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
     }
 
     public void deleteOrder(Long idOrder) {
-        Orders order = ordersRepositroy.findById(idOrder).orElse(null);
+        Orders order = ordersRepository.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
-        ordersRepositroy.delete(order);
+        ordersRepository.delete(order);
     }
 
     public OrderDto changeStatus(Long idOrder, String status ) {
-        Orders order = ordersRepositroy.findById(idOrder).orElse(null);
+        Orders order = ordersRepository.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
@@ -109,7 +105,7 @@ public class OrderService {
             throw new UserNotFoundException();
         }
         order.changeStatus(status);
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
         return orderMapper.toDto(order);
     }
 
@@ -140,7 +136,7 @@ public class OrderService {
         order.setUser(user);
         order.setStatus(Status.PENDING);
         order.setTotalAmount(cart.getTotalPrice().doubleValue());
-        ordersRepositroy.save(order);
+        ordersRepository.save(order);
         cartRepository.delete(cart);
         return new CheckOutResponseDto(order.getId());
     }
