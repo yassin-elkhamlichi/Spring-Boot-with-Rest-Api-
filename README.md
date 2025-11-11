@@ -2440,6 +2440,17 @@ Instead of config security manully you can use Auth Providers like
 Auth0 , Amazon Cognito , firbase authentication , Okta (is a third part)
 this give you automatically use the feature like "email verification , password resets,account lockouts,social login ..."
 but you have the choice !!!!!
-
-
+---
+we should add new exception handler to handle the exception about can't get the object in java 
+"desirialization" exceptition 
+so we add in the GlobalExceptionHandler class this :
+```java
+@ExceptionHandler(HttpMessageNotReadableException.class)
+public ResponseEntity<Map<String,String>> handleUnreadableMessage()
+{
+return ResponseEntity.badRequest().body(
+Map.of("error" , "Invalid request body")
+);
+}
+```
 

@@ -31,16 +31,11 @@ public class CheckoutController {
         return ResponseEntity.ok(response);
 
     }
-    @ExceptionHandler(CartNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleCartNotFoundException(){
+    @ExceptionHandler({CartNotFoundException.class , CartEmptyException.class})
+    public ResponseEntity<Map<String,String>> handleException(Exception ex){
         return ResponseEntity.status(400).body(
-                Map.of("error" , "Cart not found")
+                Map.of("error" , ex.getMessage())
         );
     }
-    @ExceptionHandler(CartEmptyException.class)
-    public ResponseEntity<Map<String,String>> handleCartEmptyException(){
-        return ResponseEntity.status(400).body(
-                Map.of("error" , "Cart Empty")
-        );
-    }
+
 }
