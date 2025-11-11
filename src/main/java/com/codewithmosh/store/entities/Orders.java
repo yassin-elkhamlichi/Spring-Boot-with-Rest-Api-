@@ -85,4 +85,19 @@ public class Orders {
         getOrder_items().remove(item);
     }
 
+    public void changeStatus(String status) {
+        switch (status) {
+            case "PAID":
+                setStatus(Status.PAID);
+                break;
+            case "FAILED":
+                setStatus(Status.FAILED);
+                break;
+            case "CANCELLED":
+                setStatus(Status.CANCELLED);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown status: " + status);
+        }
+    }
 }

@@ -1,14 +1,12 @@
 package com.codewithmosh.store.controllers;
 
-import com.codewithmosh.store.dtos.AddItemToOrderDto;
-import com.codewithmosh.store.dtos.ItemCartDto;
-import com.codewithmosh.store.dtos.OrderDto;
-import com.codewithmosh.store.dtos.UpdateItemInOrder;
+import com.codewithmosh.store.dtos.*;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.entities.Status;
 import com.codewithmosh.store.exception.ItemNotFoundException;
 import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
+import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
 import com.codewithmosh.store.repositories.UserRepository;
@@ -64,7 +62,7 @@ public class OrdersController {
         return ResponseEntity.ok(orderItemDto);
     }
 
-    @PutMapping("{idOrder}/item/{idItem}")
+    @PutMapping("{idOrder}/item/{idProduct}")
     public ResponseEntity<ItemCartDto> updateItemInOrder(
             @PathVariable Long idUser,
             @PathVariable Long idOrder,
@@ -93,12 +91,12 @@ public class OrdersController {
         return ResponseEntity.noContent().build();
     }
     @PostMapping("{idOrder}/status")
-    public ResponseEntity<OrderDto> changeStatus(
+    public ResponseEntity<OrderDto> changeStatusForOrder(
             @PathVariable Long idUser,
             @PathVariable Long idOrder,
-            @RequestBody Status status
+            @RequestBody OrderStatusUpdateDto statusUpdate
     ){
-        OrderDto orderdto = orderService.changeStatus(idOrder,status);
+        OrderDto orderdto = orderService.changeStatus(idOrder,statusUpdate.getStatus().toString(),idUser);
         return ResponseEntity.ok(orderdto);
     }
     @ExceptionHandler(OrderNotFoundException.class)
@@ -118,5 +116,11 @@ public class OrdersController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("error" , "item not found")
         );
+    }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleUserException(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("error" , "User not found")
+                );
     }
 }

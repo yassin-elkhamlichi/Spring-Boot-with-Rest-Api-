@@ -7,13 +7,16 @@ import com.codewithmosh.store.dtos.UpdateItemInOrder;
 import com.codewithmosh.store.entities.Order_items;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.entities.Status;
+import com.codewithmosh.store.entities.User;
 import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
+import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
 import com.codewithmosh.store.repositories.ItemOrderRepository;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
 import com.codewithmosh.store.repositories.ProductRepository;
+import com.codewithmosh.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,7 @@ public class OrderService {
     private final OrdersRepositroy ordersRepositroy;
     private final Order_itemsMapper order_itemsMapper;
     private final OrderMapper orderMapper;
+    private final UserRepository userRepository;
 
 
     public ItemCartDto addItemInOrder(AddItemToOrderDto data,Long idOrder){
@@ -96,12 +100,16 @@ public class OrderService {
         ordersRepositroy.delete(order);
     }
 
-    public OrderDto changeStatus(Long idOrder, Status status) {
+    public OrderDto changeStatus(Long idOrder, String status , Long idUser) {
         Orders order = ordersRepositroy.findById(idOrder).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }
-        order.setStatus(status);
+        User user = userRepository.findById(idUser).orElse(null);
+        if(user == null) {
+            throw new UserNotFoundException();
+        }
+        order.changeStatus(status);
         ordersRepositroy.save(order);
         return orderMapper.toDto(order);
     }
