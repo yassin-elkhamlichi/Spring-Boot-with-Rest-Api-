@@ -7,10 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @AllArgsConstructor
@@ -27,7 +24,7 @@ public class Cart {
     @Column(name = "dateCreated")
     private Date dateCreated;
     @OneToMany(mappedBy = "cart" , cascade = CascadeType.ALL , orphanRemoval = true)
-    private Set<ItemCart> itemCart = new HashSet<>();
+    private List<ItemCart> itemCart = new ArrayList<>();
     public BigDecimal getTotalPrice() {
         return itemCart.stream().map(ItemCart::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
     }

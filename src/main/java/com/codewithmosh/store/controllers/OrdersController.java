@@ -8,6 +8,7 @@ import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
+import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.OrdersRepositroy;
 import com.codewithmosh.store.repositories.UserRepository;
 import com.codewithmosh.store.services.OrderService;
@@ -29,6 +30,7 @@ public class OrdersController {
     private final UserRepository userRepository;
     private OrderMapper orderMapper;
     private OrderService orderService;
+    private CartRepository cartRepository;
 
     @GetMapping
     public List<OrderDto> getAllOrders(
@@ -38,6 +40,14 @@ public class OrdersController {
                 .stream()
                 .map(orderMapper::toDto)
                 .toList();
+    }
+    @PostMapping("Checkout")
+    public ResponseEntity<OrderDto> Checkout(
+            @PathVariable Long idUser,
+            @RequestBody CheckoutDto data
+    ){
+        OrderDto orderDto = orderService.CheckingOut(data,idUser);
+        return ResponseEntity.ok(orderDto);
     }
     @PostMapping
     public ResponseEntity<OrderDto> CreateOrder(

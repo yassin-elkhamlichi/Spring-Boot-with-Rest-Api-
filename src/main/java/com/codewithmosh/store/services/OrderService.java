@@ -1,26 +1,26 @@
 package com.codewithmosh.store.services;
 
-import com.codewithmosh.store.dtos.AddItemToOrderDto;
-import com.codewithmosh.store.dtos.ItemCartDto;
-import com.codewithmosh.store.dtos.OrderDto;
-import com.codewithmosh.store.dtos.UpdateItemInOrder;
+import com.codewithmosh.store.dtos.*;
 import com.codewithmosh.store.entities.Order_items;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.entities.Status;
 import com.codewithmosh.store.entities.User;
+import com.codewithmosh.store.exception.CartNotFoundException;
 import com.codewithmosh.store.exception.OrderNotFoundException;
 import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.exception.UserNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
-import com.codewithmosh.store.repositories.ItemOrderRepository;
-import com.codewithmosh.store.repositories.OrdersRepositroy;
-import com.codewithmosh.store.repositories.ProductRepository;
-import com.codewithmosh.store.repositories.UserRepository;
+import com.codewithmosh.store.repositories.*;
 import lombok.AllArgsConstructor;
+import org.hibernate.query.Order;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -32,6 +32,7 @@ public class OrderService {
     private final Order_itemsMapper order_itemsMapper;
     private final OrderMapper orderMapper;
     private final UserRepository userRepository;
+    private final CartRepository cartRepository;
 
 
     public ItemCartDto addItemInOrder(AddItemToOrderDto data,Long idOrder){
@@ -111,6 +112,38 @@ public class OrderService {
         }
         order.changeStatus(status);
         ordersRepositroy.save(order);
+        return orderMapper.toDto(order);
+    }
+
+    public OrderDto CheckingOut(CheckoutDto data , Long idUser) {
+        var cart = cartRepository.findById(data.getCartId()).orElse(null);
+        if(cart == null || cart.getItemCart().isEmpty()){
+            throw new CartNotFoundException();
+        }
+        Orders order = Orders.builder()
+                .order_items(new ArrayList<>())
+                .build();
+        cart.getItemCart().forEach( itemCart ->
+        {
+            Order_items itemOrder = Order_items.builder()
+                    .order(order)
+                    .product(itemCart.getProduct())
+                    .quantity(itemCart.getQuantity())
+                    .unit_price(itemCart.getProduct().getPrice())
+                    .total_amount(cart.getTotalPrice())
+                    .build();
+            order.getOrder_items().add(itemOrder);
+        }
+        );
+        var user = userRepository.findById(idUser).orElse(null);
+        if(user == null){
+            throw new UserNotFoundException();
+        }
+        order.setUser(user);
+        order.setStatus(Status.PENDING);
+        order.setTotalAmount(cart.getTotalPrice().doubleValue());
+        ordersRepositroy.save(order);
+        cartRepository.delete(cart);
         return orderMapper.toDto(order);
     }
 }
