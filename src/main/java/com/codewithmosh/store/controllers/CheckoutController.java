@@ -21,12 +21,11 @@ public class CheckoutController {
 
 
     @PostMapping
-    public CheckOutResponseDto checkOut(
+    public ResponseEntity<CheckOutResponseDto> checkOut(
             @Valid @RequestBody CheckOutRequestDto request
             )
     {
-
-        return orderService.CheckingOut(request);
+        return ResponseEntity.ok(orderService.CheckingOut(request));
 
     }
     @ExceptionHandler({CartNotFoundException.class , CartEmptyException.class})

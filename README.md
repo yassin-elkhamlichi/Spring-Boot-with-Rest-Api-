@@ -2584,23 +2584,34 @@ public class StripeConfig {
 #### 5.2.2 Creating a checkout Session:
  in the OrderService in Checkout method we write this :
 ```java
-  public CheckOutResponseDto CheckingOut(CheckOutRequestDto data) throws StripeException {
-        ...........................................
-        ...........................................
-        ...........................................
-        ordersRepository.save(order);
 
+@RequiredArgsConstructor // (this for don't create beans for webSitUrl') well create just for fields has final constraint
+class{
+@Value("${spring.webSiteUrl}")
+private String webSiteUrl; // if use the localhost you should use the ngrok to transform you 
+// local url to public url becouse stripe dont work with localhost  
+public CheckOutResponseDto CheckingOut(CheckOutRequestDto data) throws StripeException {
+        
+        ...........................................
+        ...........................................
+        ...........................................
+    ordersRepository.save(order);
+
+    try {
         //Create a checkout session
         var builder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
-                .setCancelUrl(webSiteUrl + "\"/checkout-cancel?orderId="+order.getId());
+                .setCancelUrl(webSiteUrl + "/checkout-cancel?orderId=" + order.getId());
         order.getOrder_items().forEach(item -> {
             var lineItem = SessionCreateParams.LineItem.builder()
+                    .setQuantity(Long.valueOf(item.getQuantity()))
                     .setPriceData(
                             SessionCreateParams.LineItem.PriceData.builder()
-                                    .setCurrency("DH")
-                                    .setUnitAmountDecimal(item.getUnit_price())
+                                    .setCurrency("usd")
+                                    .setUnitAmountDecimal(
+                                            item.getUnit_price()
+                                                    .multiply(BigDecimal.valueOf(100)))
                                     .setProductData(
                                             SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                     .setName(item.getProduct().getName())
@@ -2613,7 +2624,13 @@ public class StripeConfig {
         });
         var session = Session.create(builder.build());
         cartRepository.delete(cart);
-        return new CheckOutResponseDto(order.getId() ,  session.getUrl());
+        return new CheckOutResponseDto(order.getId(), session.getUrl());
+    } catch (StripeException e) {
+        ordersRepository.delete(order);
+        throw new RuntimeException(e);
+    }
+}
+}
 ```
 
 --- 

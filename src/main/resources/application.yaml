@@ -21,4 +21,4 @@ spring:
   stripe:
     secretKey: ${STRIPE_SECRET_KEY}
 
-  webSiteUrl: "https:/localhost:8080"
+  webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"

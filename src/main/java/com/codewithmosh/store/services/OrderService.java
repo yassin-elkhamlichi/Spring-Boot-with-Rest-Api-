@@ -15,7 +15,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,9 +32,8 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final AuthService authService;
-    private final RestClient.Builder builder;
 
-    @Value("${string.webSiteUrl}")
+    @Value("${spring.webSiteUrl}")
     private String webSiteUrl;
 
 
@@ -118,6 +117,7 @@ public class OrderService {
         return orderMapper.toDto(order);
     }
 
+    @Transactional
     public CheckOutResponseDto CheckingOut(CheckOutRequestDto data)  {
         var cart = cartRepository.findById(data.getCartId()).orElse(null);
         if(cart == null ){
@@ -152,13 +152,16 @@ public class OrderService {
             var builder = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
                     .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
-                    .setCancelUrl(webSiteUrl + "\"/checkout-cancel?orderId="+order.getId());
+                    .setCancelUrl(webSiteUrl +  "/checkout-cancel?orderId="+ order.getId());
             order.getOrder_items().forEach(item -> {
                 var lineItem = SessionCreateParams.LineItem.builder()
+                        .setQuantity(Long.valueOf(item.getQuantity()))
                         .setPriceData(
                                 SessionCreateParams.LineItem.PriceData.builder()
-                                        .setCurrency("DH")
-                                        .setUnitAmountDecimal(item.getUnit_price())
+                                        .setCurrency("usd")
+                                        .setUnitAmountDecimal(
+                                                item.getUnit_price()
+                                                .multiply(BigDecimal.valueOf(100)))
                                         .setProductData(
                                                 SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                         .setName(item.getProduct().getName())
