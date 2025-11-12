@@ -1,23 +1,23 @@
 package com.codewithmosh.store.services;
 
-import com.codewithmosh.store.dtos.*;
+import com.codewithmosh.store.dtos.AddItemToOrderDto;
+import com.codewithmosh.store.dtos.ItemCartDto;
+import com.codewithmosh.store.dtos.UpdateItemInOrder;
 import com.codewithmosh.store.entities.Order_items;
 import com.codewithmosh.store.entities.Orders;
-import com.codewithmosh.store.entities.Status;
-import com.codewithmosh.store.entities.User;
-import com.codewithmosh.store.exception.*;
+import com.codewithmosh.store.exception.OrderNotFoundException;
+import com.codewithmosh.store.exception.ProductNotFoundException;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
+import com.codewithmosh.store.payement.IPaymentGateway;
 import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.ItemOrderRepository;
 import com.codewithmosh.store.repositories.OrdersRepository;
 import com.codewithmosh.store.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -100,58 +100,5 @@ public class OrderService {
         ordersRepository.delete(order);
     }
 
-    public OrderDto changeStatus(Long idOrder, String status ) {
-        Orders order = ordersRepository.findById(idOrder).orElse(null);
-        if (order == null) {
-            throw new OrderNotFoundException();
-        }
-        User user = authService.getCurrentUser();
-        if(user == null) {
-            throw new UserNotFoundException();
-        }
-        order.changeStatus(status);
-        ordersRepository.save(order);
-        return orderMapper.toDto(order);
-    }
 
-    @Transactional
-    public CheckOutResponseDto CheckingOut(CheckOutRequestDto data)  {
-        var cart = cartRepository.findById(data.getCartId()).orElse(null);
-        if(cart == null ){
-            throw new CartNotFoundException();
-        }
-        if(cart.getItemCart().isEmpty()){
-            throw new CartEmptyException();
-        }
-        Orders order = Orders.builder()
-                .order_items(new ArrayList<>())
-                .build();
-        cart.getItemCart().forEach( itemCart ->
-        {
-            Order_items itemOrder = Order_items.builder()
-                    .order(order)
-                    .product(itemCart.getProduct())
-                    .quantity(itemCart.getQuantity())
-                    .unit_price(itemCart.getProduct().getPrice())
-                    .total_amount(cart.getTotalPrice())
-                    .build();
-            order.getOrder_items().add(itemOrder);
-        }
-        );
-        var user =authService.getCurrentUser();
-        order.setUser(user);
-        order.setStatus(Status.PENDING);
-        order.setTotalAmount(cart.getTotalPrice().doubleValue());
-        ordersRepository.save(order);
-
-        try {
-            //Create a checkout session
-            var session = paymentGateway.createCheckoutSession(order);
-            cartRepository.delete(cart);
-            return new CheckOutResponseDto(order.getId() ,  session.getCheckoutUrl());
-        } catch (PaymentException e) {
-            ordersRepository.delete(order);
-            throw e;
-        }
-    }
 }

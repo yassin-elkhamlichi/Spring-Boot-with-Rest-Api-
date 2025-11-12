@@ -84,14 +84,7 @@ public class OrdersController {
         orderService.deleteOrder(idOrder);
         return ResponseEntity.noContent().build();
     }
-    @PostMapping("{idOrder}/status")
-    public ResponseEntity<OrderDto> changeStatusForOrder(
-            @PathVariable Long idOrder,
-            @RequestBody OrderStatusUpdateDto statusUpdate
-    ){
-        OrderDto orderdto = orderService.changeStatus(idOrder,statusUpdate.getStatus().toString());
-        return ResponseEntity.ok(orderdto);
-    }
+
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<Map<String,String>> handleOrderException(){
         return ResponseEntity.status(404).body(

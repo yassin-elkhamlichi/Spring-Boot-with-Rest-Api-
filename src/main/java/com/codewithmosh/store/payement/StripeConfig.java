@@ -1,4 +1,4 @@
-package com.codewithmosh.store.config;
+package com.codewithmosh.store.payement;
 
 import com.stripe.Stripe;
 import jakarta.annotation.PostConstruct;

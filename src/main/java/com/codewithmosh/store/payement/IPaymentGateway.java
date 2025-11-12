@@ -1,7 +1,10 @@
-package com.codewithmosh.store.services;
+package com.codewithmosh.store.payement;
 
 import com.codewithmosh.store.entities.Orders;
 
+import java.util.Optional;
+
 public interface IPaymentGateway {
     CheckoutSession createCheckoutSession(Orders order);
+    Optional<PaymentResult> parseWebhookRequest(WebhookRequest request);
 }

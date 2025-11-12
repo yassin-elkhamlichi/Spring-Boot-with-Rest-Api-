@@ -2774,6 +2774,8 @@ package com.codewithmosh.store.services;
 import com.codewithmosh.store.entities.Order_items;
 import com.codewithmosh.store.entities.Orders;
 import com.codewithmosh.store.exception.PaymentException;
+import com.codewithmosh.store.payement.CheckoutSession;
+import com.codewithmosh.store.payement.IPaymentGateway;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -2785,22 +2787,23 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class StripePaymentGateway implements IPaymentGateway{
+public class StripePaymentGateway implements IPaymentGateway {
     @Value("${spring.webSiteUrl}")
     private String webSiteUrl;
+
     @Override
     public CheckoutSession createCheckoutSession(Orders order) {
         try {
             var builder = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
                     .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
-                    .setCancelUrl(webSiteUrl +  "/checkout-cancel?orderId="+ order.getId());
+                    .setCancelUrl(webSiteUrl + "/checkout-cancel?orderId=" + order.getId());
             order.getOrder_items().forEach(item -> {
                 var lineItem = createLineItem(item);
                 builder.addLineItem(lineItem);
             });
-           var session =  Session.create(builder.build());
-           return new CheckoutSession(session.getUrl());
+            var session = Session.create(builder.build());
+            return new CheckoutSession(session.getUrl());
         } catch (StripeException e) {
             System.out.println(e.getMessage());
             throw new PaymentException();
@@ -2826,7 +2829,7 @@ public class StripePaymentGateway implements IPaymentGateway{
                 .build();
     }
 
-    private  SessionCreateParams.LineItem.PriceData.ProductData createProductData(Order_items item) {
+    private SessionCreateParams.LineItem.PriceData.ProductData createProductData(Order_items item) {
         return SessionCreateParams.LineItem.PriceData.ProductData.builder()
                 .setName(item.getProduct().getName())
                 .build();
@@ -2888,5 +2891,19 @@ stripe trigger payment_intent.succeeded
 and after enter this to make webhook change in the database :
 ```java
 stripe trigger payment_intent.succeeded  --add "payment_intent:metadata[order-id]=16"
+
 ```
+---
+!!! ALL THE LOGIC ABOUT CHECKOUT MOVE FROM ORDERSERVIOCE TO CHECKOUTSERVICE
+---
+I do some modification on the code in the payment feature i add parseWebhookRequest as 
+method in the interface and after i will refactor code for it
+---
+### Organizing Code By Feature :
+in the large application we find many packages and we can't find the related files 
+easy so based from the **Cohesion** we use the Feature-based  to organizing our code instead of 
+the layer-Based
+**Cohesion** :
+Things that are closely related should live togather.
+we applied this for the payment feature
 
