@@ -2834,3 +2834,44 @@ public class StripePaymentGateway implements IPaymentGateway{
 }
 
 ```
+#### 5.2.3 Webhook EndPoint:
+### Build the webhook endPoint :
+in the controller we write this : 
+```java
+ @PostMapping("/webhook")
+    public ResponseEntity<Void>  handleWebhook(
+            @RequestHeader("Stripe-Signature") String signature,
+            @RequestBody String payload
+    ){
+        try {
+            var event = Webhook.constructEvent(payload,signature,webhookKey);
+            System.out.println(event.getType());
+            var stripObject = event.getDataObjectDeserializer().getObject().orElse(null);
+            switch (event.getType()){
+                case "payment_intent.succeeded"->{
+
+                }
+                case "payment_intent.failed" ->{
+
+                }
+            }
+            return ResponseEntity.ok().build();
+        } catch (SignatureVerificationException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+```
+### Testing the webhook endPoint :
+and we need install the stripe cli to test if the webhook work 
+first install it and run this commends : 
+```bash
+ stripe login    
+```
+and get the authentication and after run this commend
+```bash
+stripe listen --forward-to http://localhost:8080/checkout/webhook
+```
+you will get the webhook secret api get it and add in .env
+
+and after this let this terminal open and give him name like "Stripe server "
+and open otheeer terminal to test Stripe events

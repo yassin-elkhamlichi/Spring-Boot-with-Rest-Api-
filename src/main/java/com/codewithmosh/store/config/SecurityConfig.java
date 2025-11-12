@@ -59,8 +59,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/users/**").permitAll()
                                                 .requestMatchers("/auth/**").permitAll()
                                                 .requestMatchers("/swagger-ui.html").permitAll()
-                                                .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/checkout/webhook").permitAll()
                                                 .anyRequest().authenticated() // Change back to authenticated
                                 )
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

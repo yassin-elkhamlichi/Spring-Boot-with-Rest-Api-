@@ -20,5 +20,6 @@ spring:
 
   stripe:
     secretKey: ${STRIPE_SECRET_KEY}
+    webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
 
   webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
