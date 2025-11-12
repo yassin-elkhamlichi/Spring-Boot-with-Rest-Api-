@@ -2454,3 +2454,132 @@ Map.of("error" , "Invalid request body")
 }
 ```
 
+---
+
+## **5. Payment :**
+we work with **Stripe** <br>
+thier two ways to use Stripe : <br>
+**Stripe Chekout** : <br>
+-> Simpler, hosted solution .<br>
+-> Redirect the user to Stripe<br>
+-> Stripe handles all the complexity <br>
+**Stripe elements**<br>
+-> build our own checkout form<br>
+-> Gives us full control<br>
+-> More complex <br>
+
+---
+
+### 5.1 Overview of the checkout process :
+
+![PaymentProcess](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/PaymentProcess.jpeg)
+
+**Decription** :
+
+### 🌐 **The Full Journey: From "Checkout" to "Order Confirmed"**
+*(All pieces connected: sessions, SDK, webhooks, security)*
+
+#### **1. You Click "Checkout"**
+- You add items to your cart and click **"Pay Now"**.
+- Your browser sends this request to the **Spring Boot server**.
+- The server:  
+  → Creates a **temporary session** (like a digital "table number" for your visit).  
+  → Saves your order in the **database** as `PENDING` (with a unique `order_id`).  
+  → *Why session?* To remember your cart *during this browser session* (e.g., if you refresh the page).
+
+---
+
+#### **2. Server Asks Stripe: "Create a Payment Page!"**
+- The server uses the **Stripe SDK** (a pre-built toolkit) to talk to Stripe:  
+  → Attaches your `order_id` as **metadata** (a secret note only servers see).  
+  → Requests a secure payment link.
+- **Stripe responds** with:  
+  → A unique **payment session ID** (Stripe’s internal reference).  
+  → A **payment URL** (e.g., `https://checkout.stripe.com/pay/cs_abc123`).
+- *Why SDK?* It handles encryption, API errors, and security automatically – no manual HTTP calls.
+
+---
+
+#### **3. You’re Redirected to Stripe’s Payment Page**
+- The server tells your browser: **"Go here to pay!"** (via redirect).
+- Your **session ID** travels with you (in a cookie) so the server remembers you.
+- You see Stripe’s trusted page:  
+  → Enter card details → Click "Pay $10".  
+  → *Never* enters your site – Stripe handles PCI compliance.
+
+---
+
+#### **4. Stripe Processes Payment (Behind the Scenes)**
+- **If payment succeeds**:  
+  → Stripe **immediately sends a secret notification** (`webhook`) to your server.  
+  → Stripe redirects your browser to: `yoursite.com/success?session_id=cs_abc123`.
+- **If you cancel**:  
+  → Stripe redirects to `yoursite.com/cancel`.
+
+---
+
+#### **5. Critical Step: Webhook Updates the Order (Server-to-Server)**
+- **This happens even if you close the browser!**
+- Stripe pings your server at `/webhook` with:  
+  → Event type: `checkout.session.completed`.  
+  → Your `order_id` (from metadata) and payment proof.
+- Server **verifies the webhook** (using a secret key) to block hackers.
+- Server **updates the database**:  
+  → Changes order `#1001` from `PENDING` → `PAID`.  
+  → *No session used here* – this is permanent and reliable.
+
+the weebhook is when to sides notify it auto :
+![Webhook](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/WebHook.jpeg)]
+
+---
+
+#### **6. You Return to the App (Browser Redirect)**
+- Your browser lands on `yoursite.com/success?session_id=cs_abc123`.
+- Server:  
+  → Uses the **Stripe SDK** to fetch payment status for `cs_abc123`.  
+  → Checks the **database** (not session!) for order `#1001` status.  
+  → *Why database?* In case the webhook arrived first (it usually does).
+- Shows you: **"Payment successful! Order #1001 confirmed 🎉"**
+- Your **session** is used only for display (e.g., showing your order summary).
+
+---
+
+### 🧩 **Why Every Piece Matters**
+- **Session**: Short-term memory for *your browser experience* (e.g., cart persistence).
+- **Stripe SDK**: The "magic translator" between your server and Stripe (handles complexity).
+- **Webhook**: The **most critical piece** – ensures orders update *reliably*, even with bad internet or closed tabs.
+- **Database**: The **source of truth** – sessions and webhooks both write to it, but *only the database matters* for order status.
+- **Metadata**: The glue linking Stripe events (`cs_abc123`) to your orders (`#1001`).
+
+---
+
+### 5.2 **Stripe SDK** :
+---
+
+#### 5.2.1 Adding Stripe to the project:
+first we add the depandency in the pom.xml :
+```xml
+<dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>27.1.0</version>
+        </dependency>
+```
+and after we should get key secret from Stripe in the browser 
+and inject it in our project (save it in the .env)
+and after we should config the strip in the StripeConfig class :
+```java
+@Configuration
+public class StripeConfig {
+    @Value("${spring.stripe.key}")
+    private String Key;
+    
+    @PostConstruct
+    public void init(){
+        Stripe.apiKey = Key;
+    }
+}
+```
+
+
+

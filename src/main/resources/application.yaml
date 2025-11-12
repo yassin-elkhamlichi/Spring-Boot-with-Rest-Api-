@@ -15,3 +15,5 @@ spring:
     secret: ${JWT_SECRET}
     TimeOutR: ${Refresh_Token_Expire}
     TimeOutA: ${Access_Token_Expire}
+  stripe:
+    secretKey: ${STRIPE_SECRET_KEY}
