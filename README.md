@@ -2641,6 +2641,196 @@ thier many exception related with stripe like : <br>
 - Bad requests (e.g. negative amount)
 - Stripe service downtime
 so we need to hundle all this cases 
+----
+### Decoupling from Stripe :
+the last way is bad becouse is not easy to maintenence
+so we should to add new Interface in the service name "IPaymentGateway"
 
+```java
+public interface IPaymentGateway {
+    CheckoutSession createCheckoutSession(Orders order);
+}
+```
+then create class " CheckoutSession" 
+```java
+@AllArgsConstructor
+@Getter
+public class CheckoutSession {
+    private String checkoutUrl;
+}
+```
+and finally add class for the specific paymentGateway lake stripe,paybal..
+```java
+@Service
+@RequiredArgsConstructor
+public class StripePaymentGateway implements IPaymentGateway{
+    @Value("${spring.webSiteUrl}")
+    private String webSiteUrl;
+    @Override
+    public CheckoutSession createCheckoutSession(Orders order) {
+        try {
+            var builder = SessionCreateParams.builder()
+                    .setMode(SessionCreateParams.Mode.PAYMENT)
+                    .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
+                    .setCancelUrl(webSiteUrl +  "/checkout-cancel?orderId="+ order.getId());
+            order.getOrder_items().forEach(item -> {
+                var lineItem = SessionCreateParams.LineItem.builder()
+                        .setQuantity(Long.valueOf(item.getQuantity()))
+                        .setPriceData(
+                                SessionCreateParams.LineItem.PriceData.builder()
+                                        .setCurrency("usd")
+                                        .setUnitAmountDecimal(
+                                                item.getUnit_price()
+                                                        .multiply(BigDecimal.valueOf(100)))
+                                        .setProductData(
+                                                SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                        .setName(item.getProduct().getName())
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .build();
+                builder.addLineItem(lineItem);
+            });
+           var session =  Session.create(builder.build());
+           return new CheckoutSession(session.getUrl());
+        } catch (StripeException e) {
+            System.out.println(e.getMessage());
+            throw new PaymentException();
+        }
+    }
+}
 
+```
 
+and in the orderService will add the IPaymentGateway as field 
+and use it :
+```java
+    private final IPaymentGateway paymentGateway;
+ @Transactional
+    public CheckOutResponseDto CheckingOut(CheckOutRequestDto data)  {
+        var cart = cartRepository.findById(data.getCartId()).orElse(null);
+        if(cart == null ){
+            throw new CartNotFoundException();
+        }
+        if(cart.getItemCart().isEmpty()){
+            throw new CartEmptyException();
+        }
+        Orders order = Orders.builder()
+                .order_items(new ArrayList<>())
+                .build();
+        cart.getItemCart().forEach( itemCart ->
+        {
+            Order_items itemOrder = Order_items.builder()
+                    .order(order)
+                    .product(itemCart.getProduct())
+                    .quantity(itemCart.getQuantity())
+                    .unit_price(itemCart.getProduct().getPrice())
+                    .total_amount(cart.getTotalPrice())
+                    .build();
+            order.getOrder_items().add(itemOrder);
+        }
+        );
+        var user =authService.getCurrentUser();
+        order.setUser(user);
+        order.setStatus(Status.PENDING);
+        order.setTotalAmount(cart.getTotalPrice().doubleValue());
+        ordersRepository.save(order);
+
+        try {
+            //Create a checkout session
+            var session = paymentGateway.createCheckoutSession(order);
+            cartRepository.delete(cart);
+            return new CheckOutResponseDto(order.getId() ,  session.getCheckoutUrl());
+        } catch (PaymentException e) {
+            ordersRepository.delete(order);
+            throw e;
+        }
+    }
+```
+so if you Remarque here nothing about stripe and also control doesn't now anything about srtipe 
+all the logic about stripe is inside the StripPaymentGateway
+```java
+@PostMapping
+    public CheckOutResponseDto checkOut(
+            @Valid @RequestBody CheckOutRequestDto request
+            )
+    {
+        return orderService.CheckingOut(request);
+
+    }
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<?> handlePaymentException(){
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorDto("Error creating a checkout session"));
+    }
+```
+as a final enhance the code in the Stripe class we can make it like this for more cleans :
+
+```java
+package com.codewithmosh.store.services;
+
+import com.codewithmosh.store.entities.Order_items;
+import com.codewithmosh.store.entities.Orders;
+import com.codewithmosh.store.exception.PaymentException;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+
+@Service
+@RequiredArgsConstructor
+public class StripePaymentGateway implements IPaymentGateway{
+    @Value("${spring.webSiteUrl}")
+    private String webSiteUrl;
+    @Override
+    public CheckoutSession createCheckoutSession(Orders order) {
+        try {
+            var builder = SessionCreateParams.builder()
+                    .setMode(SessionCreateParams.Mode.PAYMENT)
+                    .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
+                    .setCancelUrl(webSiteUrl +  "/checkout-cancel?orderId="+ order.getId());
+            order.getOrder_items().forEach(item -> {
+                var lineItem = createLineItem(item);
+                builder.addLineItem(lineItem);
+            });
+           var session =  Session.create(builder.build());
+           return new CheckoutSession(session.getUrl());
+        } catch (StripeException e) {
+            System.out.println(e.getMessage());
+            throw new PaymentException();
+        }
+    }
+
+    private SessionCreateParams.LineItem createLineItem(Order_items item) {
+        return SessionCreateParams.LineItem.builder()
+                .setQuantity(Long.valueOf(item.getQuantity()))
+                .setPriceData(createPriceData(item)
+                )
+                .build();
+    }
+
+    private SessionCreateParams.LineItem.PriceData createPriceData(Order_items item) {
+        return SessionCreateParams.LineItem.PriceData.builder()
+                .setCurrency("usd")
+                .setUnitAmountDecimal(
+                        item.getUnit_price().multiply(BigDecimal.valueOf(100)))
+                .setProductData(
+                        createProductData(item)
+                )
+                .build();
+    }
+
+    private  SessionCreateParams.LineItem.PriceData.ProductData createProductData(Order_items item) {
+        return SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                .setName(item.getProduct().getName())
+                .build();
+    }
+}
+
+```

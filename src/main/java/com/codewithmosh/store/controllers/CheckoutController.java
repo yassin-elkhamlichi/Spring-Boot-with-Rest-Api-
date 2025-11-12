@@ -2,11 +2,14 @@ package com.codewithmosh.store.controllers;
 
 import com.codewithmosh.store.dtos.CheckOutRequestDto;
 import com.codewithmosh.store.dtos.CheckOutResponseDto;
+import com.codewithmosh.store.dtos.ErrorDto;
 import com.codewithmosh.store.exception.CartEmptyException;
 import com.codewithmosh.store.exception.CartNotFoundException;
+import com.codewithmosh.store.exception.PaymentException;
 import com.codewithmosh.store.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +24,18 @@ public class CheckoutController {
 
 
     @PostMapping
-    public ResponseEntity<CheckOutResponseDto> checkOut(
+    public CheckOutResponseDto checkOut(
             @Valid @RequestBody CheckOutRequestDto request
             )
     {
-        return ResponseEntity.ok(orderService.CheckingOut(request));
+        return orderService.CheckingOut(request);
 
+    }
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<?> handlePaymentException(){
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorDto("Error creating a checkout session"));
     }
     @ExceptionHandler({CartNotFoundException.class , CartEmptyException.class})
     public ResponseEntity<Map<String,String>> handleException(Exception ex){

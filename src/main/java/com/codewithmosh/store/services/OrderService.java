@@ -8,12 +8,11 @@ import com.codewithmosh.store.entities.User;
 import com.codewithmosh.store.exception.*;
 import com.codewithmosh.store.mappers.OrderMapper;
 import com.codewithmosh.store.mappers.Order_itemsMapper;
-import com.codewithmosh.store.repositories.*;
-import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.checkout.SessionCreateParams;
+import com.codewithmosh.store.repositories.CartRepository;
+import com.codewithmosh.store.repositories.ItemOrderRepository;
+import com.codewithmosh.store.repositories.OrdersRepository;
+import com.codewithmosh.store.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +28,10 @@ public class OrderService {
     private final OrdersRepository ordersRepository;
     private final Order_itemsMapper order_itemsMapper;
     private final OrderMapper orderMapper;
-    private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final AuthService authService;
+    private final IPaymentGateway paymentGateway;
 
-    @Value("${spring.webSiteUrl}")
-    private String webSiteUrl;
 
 
     public ItemCartDto addItemInOrder(AddItemToOrderDto data,Long idOrder){
@@ -149,35 +146,12 @@ public class OrderService {
 
         try {
             //Create a checkout session
-            var builder = SessionCreateParams.builder()
-                    .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
-                    .setCancelUrl(webSiteUrl +  "/checkout-cancel?orderId="+ order.getId());
-            order.getOrder_items().forEach(item -> {
-                var lineItem = SessionCreateParams.LineItem.builder()
-                        .setQuantity(Long.valueOf(item.getQuantity()))
-                        .setPriceData(
-                                SessionCreateParams.LineItem.PriceData.builder()
-                                        .setCurrency("usd")
-                                        .setUnitAmountDecimal(
-                                                item.getUnit_price()
-                                                .multiply(BigDecimal.valueOf(100)))
-                                        .setProductData(
-                                                SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                        .setName(item.getProduct().getName())
-                                                        .build()
-                                        )
-                                        .build()
-                        )
-                        .build();
-                builder.addLineItem(lineItem);
-            });
-            var session = Session.create(builder.build());
+            var session = paymentGateway.createCheckoutSession(order);
             cartRepository.delete(cart);
-            return new CheckOutResponseDto(order.getId() ,  session.getUrl());
-        } catch (StripeException e) {
+            return new CheckOutResponseDto(order.getId() ,  session.getCheckoutUrl());
+        } catch (PaymentException e) {
             ordersRepository.delete(order);
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 }
