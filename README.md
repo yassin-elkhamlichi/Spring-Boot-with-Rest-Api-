@@ -2581,5 +2581,49 @@ public class StripeConfig {
 }
 ```
 
+#### 5.2.2 Creating a checkout Session:
+ in the OrderService in Checkout method we write this :
+```java
+  public CheckOutResponseDto CheckingOut(CheckOutRequestDto data) throws StripeException {
+        ...........................................
+        ...........................................
+        ...........................................
+        ordersRepository.save(order);
+
+        //Create a checkout session
+        var builder = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl(webSiteUrl + "/checkout-success?orderId=" + order.getId())
+                .setCancelUrl(webSiteUrl + "\"/checkout-cancel?orderId="+order.getId());
+        order.getOrder_items().forEach(item -> {
+            var lineItem = SessionCreateParams.LineItem.builder()
+                    .setPriceData(
+                            SessionCreateParams.LineItem.PriceData.builder()
+                                    .setCurrency("DH")
+                                    .setUnitAmountDecimal(item.getUnit_price())
+                                    .setProductData(
+                                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                    .setName(item.getProduct().getName())
+                                                    .build()
+                                    )
+                                    .build()
+                    )
+                    .build();
+            builder.addLineItem(lineItem);
+        });
+        var session = Session.create(builder.build());
+        cartRepository.delete(cart);
+        return new CheckOutResponseDto(order.getId() ,  session.getUrl());
+```
+
+--- 
+### Hundle the Stripe Exception :
+thier many exception related with stripe like : <br>
+- Invalid Api Key
+- Network issues
+- Bad requests (e.g. negative amount)
+- Stripe service downtime
+so we need to hundle all this cases 
+
 
 

@@ -7,4 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class CheckOutResponseDto {
     private Long OrderId;
+    private String CheckOutUrl;
 }
