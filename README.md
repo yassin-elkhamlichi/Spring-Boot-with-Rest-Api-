@@ -2849,7 +2849,13 @@ in the controller we write this :
             var stripObject = event.getDataObjectDeserializer().getObject().orElse(null);
             switch (event.getType()){
                 case "payment_intent.succeeded"->{
-
+                    var paymentIntent = (PaymentIntent) stripObject;
+                    if (paymentIntent != null) {
+                        var orderId = paymentIntent.getMetadata().get("order_id");
+                        var order = ordersRepository.findById(Long.valueOf(orderId)).orElseThrow();
+                        order.setStatus(Status.PAID);
+                        ordersRepository.save(order);
+                    }
                 }
                 case "payment_intent.failed" ->{
 
@@ -2874,4 +2880,13 @@ stripe listen --forward-to http://localhost:8080/checkout/webhook
 you will get the webhook secret api get it and add in .env
 
 and after this let this terminal open and give him name like "Stripe server "
-and open otheeer terminal to test Stripe events
+and open other terminal to test Stripe events
+and run this to test :
+```java
+stripe trigger payment_intent.succeeded  
+```
+and after enter this to make webhook change in the database :
+```java
+stripe trigger payment_intent.succeeded  --add "payment_intent:metadata[order-id]=16"
+```
+

@@ -3,11 +3,14 @@ package com.codewithmosh.store.controllers;
 import com.codewithmosh.store.dtos.CheckOutRequestDto;
 import com.codewithmosh.store.dtos.CheckOutResponseDto;
 import com.codewithmosh.store.dtos.ErrorDto;
+import com.codewithmosh.store.entities.Status;
 import com.codewithmosh.store.exception.CartEmptyException;
 import com.codewithmosh.store.exception.CartNotFoundException;
 import com.codewithmosh.store.exception.PaymentException;
+import com.codewithmosh.store.repositories.OrdersRepository;
 import com.codewithmosh.store.services.OrderService;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.PaymentIntent;
 import com.stripe.net.Webhook;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class CheckoutController {
     private final OrderService orderService;
     @Value("${spring.stripe.webhookSecretKey}")
     private String webhookKey;
+    private final OrdersRepository ordersRepository;
 
     @PostMapping
     public CheckOutResponseDto checkOut(
@@ -47,7 +51,15 @@ public class CheckoutController {
             var stripObject = event.getDataObjectDeserializer().getObject().orElse(null);
             switch (event.getType()){
                 case "payment_intent.succeeded"->{
-
+                    var paymentIntent = (PaymentIntent) stripObject;
+                    if (paymentIntent != null) {
+                        var orderId = paymentIntent.getMetadata().get("order_id");
+                        Long orderIdLong = Long.valueOf(orderId);
+                        System.out.println(orderIdLong);
+                        var order = ordersRepository.findById(orderIdLong).orElseThrow();
+                        order.setStatus(Status.PAID);
+                        ordersRepository.save(order);
+                    }
                 }
                 case "payment_intent.failed" ->{
 
