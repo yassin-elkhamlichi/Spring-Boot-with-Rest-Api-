@@ -2853,3 +2853,40 @@ spring:
 ```
 
 ---
+
+### 4.1.3 packaging the App for Production : 
+
+We need to add this plugin in the maven file 
+```maven
+  <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.6.3</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+```
+
+#### 🛠️ Think of annotation processors like code chefs:
+
+Lombok and MapStruct are tools that help generate Java code while you're building your app.
+Once they’ve done their job (during mvn compile or mvn package), they leave the kitchen.
+What gets deployed is the final cooked meal (your .class files inside a JAR/WAR) — no chefs needed at the dinner table (i.e., in production).
+##### 🔧 So why is it in your pom.xml?
+
+Because Maven needs to know:
+
+“While compiling, please use these tools to auto-generate code.”
+
+But after compilation, those tools are completely useless — your app runs just fine without them.
