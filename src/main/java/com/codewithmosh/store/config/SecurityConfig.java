@@ -5,6 +5,7 @@ import com.codewithmosh.store.filter.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -57,8 +58,14 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/carts/**").permitAll()
                                                 .requestMatchers("/users/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
+                                                .requestMatchers(HttpMethod.POST,"/products/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers(HttpMethod.DELETE,"/products/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers(HttpMethod.PUT,"/products/**").hasRole(Role.ADMIN.name())
                                                 .requestMatchers("/auth/**").permitAll()
                                                 .requestMatchers("/swagger-ui.html").permitAll()
+                                                .requestMatchers("/swagger-ui/**").permitAll()
+                                                .requestMatchers("/v3/api-docs/**").permitAll()
                                                 .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/checkout/webhook").permitAll()
