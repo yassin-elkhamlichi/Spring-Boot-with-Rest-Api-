@@ -1332,7 +1332,7 @@ public ResponseEntity<Map<String,String>> uploadFile(
 > `ObjectMapper` (from Jackson) maps JSON strings to objects.
 
 ---
-
+(you are here)
 ### 📸 Serve Uploaded Images
 
 You need an endpoint to serve the stored images:
@@ -2761,7 +2761,7 @@ stripe trigger payment_intent.succeeded  --add "payment_intent:metadata[order-id
 
 ```
 ---
-!!! ALL THE LOGIC ABOUT CHECKOUT MOVE FROM ORDERSERVIOCE TO CHECKOUTSERVICE
+!!! ALL THE LOGIC ABOUT CHECKOUT MOVE FROM ORDERSERVICE TO CHECKOUTSERVICE
 ---
 I do some modification on the code in the payment feature i add parseWebhookRequest as 
 method in the interface and after i will refactor code for it
@@ -2771,6 +2771,83 @@ in the large application we find many packages and we can't find the related fil
 easy so based from the **Cohesion** we use the Feature-based  to organizing our code instead of 
 the layer-Based
 **Cohesion** :
-Things that are closely related should live togather.
+Things that are closely related should live together.
 we applied this for the payment feature
 
+---
+## 4 Deploying :
+
+---
+
+## 4.1 Deploying The Database : 
+their many platforms help you to deployment like : <br>
+Amazon Web Services(AWS), Heroku , Digital Ocean , Railway<br>
+We use **Railway** because have free plan
+<br> So we go to site and connect it with our github account 
+and in the search looking for mysql and click it, and after you should waiiiiiiiiit 
+and you nice deploy you **MySql Server** and after we run the flyway to create schema in it
+
+---
+### 4.1.2 Managing Environments With Spring Profiles :
+
+if you want to deploy  your database so you will have to environment (local and cloud )
+so the file the configuration should divise to :  first wan include the general setting the second for dev and the third for production 
+<br> application.yaml <br>
+```java
+spring:
+  application:
+    name: store
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  jwt:
+    secret: ${JWT_SECRET}
+    TimeOutR: ${Refresh_Token_Expire}
+    TimeOutA: ${Access_Token_Expire}
+
+  profiles:
+    active: dev // first we applied the dev settings
+
+  stripe:
+    secretKey: ${STRIPE_SECRET_KEY}
+    webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
+
+  webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
+
+```
+application-dev.yaml : 
+```java
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
+
+```
+application-prod.yaml :
+```java
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+
+  webSiteUrl: https://mystore.com
+```

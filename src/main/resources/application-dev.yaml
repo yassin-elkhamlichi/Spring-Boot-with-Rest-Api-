@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: store
-
   datasource:
     url: jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${USER_NAME}
@@ -12,17 +9,5 @@ spring:
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-
-  jwt:
-    secret: ${JWT_SECRET}
-    TimeOutR: ${Refresh_Token_Expire}
-    TimeOutA: ${Access_Token_Expire}
-
-  profiles:
-    active: dev
-
-  stripe:
-    secretKey: ${STRIPE_SECRET_KEY}
-    webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
 
   webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"

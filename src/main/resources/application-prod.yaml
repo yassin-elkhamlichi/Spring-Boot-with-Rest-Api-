@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+
+  webSiteUrl: https://mystore.com
