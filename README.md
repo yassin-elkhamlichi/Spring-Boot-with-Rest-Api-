@@ -2981,3 +2981,11 @@ Imagine you’re baking a cake 🎂:
 
 ---
 >**return the subject :**
+---
+
+### 4.2 Deploying The App :
+
+go to railway and add the service as github repo and choose the repo
+and after we need to config the varibale of enviromment to make jar work correctly
+---
+### 4.2.1 Configuring Production Environmenet Varibale :

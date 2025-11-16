@@ -40,6 +40,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude
+    @Builder.Default
     private  List<Orders> orders = new ArrayList<>();
 
     public void addAddress(Address address) {
