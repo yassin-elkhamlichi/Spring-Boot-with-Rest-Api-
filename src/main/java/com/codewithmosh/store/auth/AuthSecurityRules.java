@@ -10,7 +10,7 @@ public class AuthSecurityRules implements SecurityRules {
 
     @Override
     public void configure(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers("/admin/**").hasRole(Role.ADMIN.name());
+        registry.requestMatchers("/auth/**").permitAll();
 
     }
 }
