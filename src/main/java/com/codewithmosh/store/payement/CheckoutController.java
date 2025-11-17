@@ -4,7 +4,6 @@ import com.codewithmosh.store.common.ErrorDto;
 import com.codewithmosh.store.carts.CartEmptyException;
 import com.codewithmosh.store.carts.CartNotFoundException;
 import com.codewithmosh.store.order.OrdersRepository;
-import com.codewithmosh.store.order.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

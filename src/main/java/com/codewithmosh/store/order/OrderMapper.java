@@ -6,5 +6,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
     OrderDto toDto(Orders order);
-    Orders toEntity(OrderDto orderDto);
 }
