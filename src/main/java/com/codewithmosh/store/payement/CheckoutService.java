@@ -20,7 +20,6 @@ import java.util.ArrayList;
 public class CheckoutService {
     private final OrdersRepository ordersRepository;
     private final AuthService authService;
-    private final OrderMapper orderMapper;
     private final CartRepository cartRepository;
     private final IPaymentGateway paymentGateway;
 

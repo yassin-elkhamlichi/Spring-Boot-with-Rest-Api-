@@ -63,43 +63,4 @@ public class Orders {
                 .orElse(null);
     }
 
-    public Order_items addToOrder(Product product) {
-        var order_items = getItemOrder(product.getId());
-        int quantity = 1;
-        if (order_items != null) {
-            quantity = order_items.getQuantity() + 1;
-        } else {
-            order_items = Order_items.builder()
-                    .product(product)
-                    .order(this)
-                    .build();
-            order_items.setUnit_price(product.getPrice());
-            getOrder_items().add(order_items);
-            order_items.setQuantity(quantity);
-        }
-        updateQuantityinItem(quantity, order_items);
-        updateTotalAmount(quantity, order_items);
-        return order_items;
-    }
-
-    public void removeItemOrder(Long idProduct){
-        Order_items item = getItemOrder(idProduct);
-        getOrder_items().remove(item);
-    }
-
-    public void changeStatus(String status) {
-        switch (status) {
-            case "PAID":
-                setStatus(Status.PAID);
-                break;
-            case "FAILED":
-                setStatus(Status.FAILED);
-                break;
-            case "CANCELLED":
-                setStatus(Status.CANCELLED);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
-    }
 }

@@ -17,10 +17,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CheckoutController {
 
-    private final OrderService orderService;
     private final CheckoutService checkoutService;
 
-    private final OrdersRepository ordersRepository;
 
     @PostMapping
     public CheckOutResponseDto checkOut(
