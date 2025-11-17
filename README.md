@@ -2986,6 +2986,55 @@ Imagine you’re baking a cake 🎂:
 ### 4.2 Deploying The App :
 
 go to railway and add the service as github repo and choose the repo
-and after we need to config the varibale of enviromment to make jar work correctly
+and after we need to config the varaible of environment to make jar work correctly
 ---
-### 4.2.1 Configuring Production Environmenet Varibale :
+### 4.2.1 Configuring Production Environment Variable :
+we should go to the site of Railway and add the varaible like : <br>
+JWT_SECRET <br>
+Refresh_Token_Expire <br>
+Access_Token_Expire ... <br>
+you should to config it based the type of environment prod or dev for dev you should exist in the code
+but for prod you should write it in the site 
+choose the service "your application " and choose the variable and add you variables in the service
+
+---
+### Modularizing Security Rules :
+Our configuration for Security in our application is like this : 
+```java
+ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                // first we need to make session stateless
+                // second Disable csrf
+                // third disable default login page
+                http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/carts/**").permitAll()
+                                                .requestMatchers("/users/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
+                                                .requestMatchers(HttpMethod.POST,"/products/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers(HttpMethod.DELETE,"/products/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers(HttpMethod.PUT,"/products/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers("/auth/**").permitAll()
+                                                .requestMatchers("/swagger-ui.html").permitAll()
+                                                .requestMatchers("/swagger-ui/**").permitAll()
+                                                .requestMatchers("/v3/api-docs/**").permitAll()
+                                                .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+                                                .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/checkout/webhook").permitAll()
+                                                .anyRequest().authenticated() // Change back to authenticated
+                                )
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                                .exceptionHandling(c -> {
+                                        c.authenticationEntryPoint(
+                                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                                        c.accessDeniedHandler(((request, response, accessDeniedException) -> response
+                                                        .setStatus(HttpStatus.FORBIDDEN.value())));
+                                });
+                return http.build();
+        }
+```
+Is have many request with it permission so when i want to search for in specific req is well hard  
+<br> so we Modularizing this :<br>
+we should each end point add in the package related with it for example all the endpoints related with payment should be in the paymenet package

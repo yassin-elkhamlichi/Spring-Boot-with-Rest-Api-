@@ -4,6 +4,7 @@ INSERT INTO categories (id, name) VALUES
                                       (3, 'Home & Kitchen'),
                                       (4, 'Sports & Outdoors'),
                                       (5, 'Books');
+
 INSERT INTO products (name, price, description, category_id) VALUES
 -- Electronics
 ('Apple iPhone 14', 799.00, '6.1-inch OLED display, A15 Bionic chip, 12MP dual-camera system.', 1),
