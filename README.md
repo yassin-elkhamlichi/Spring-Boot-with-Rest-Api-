@@ -2638,9 +2638,9 @@ as a final enhance the code in the Stripe class we can make it like this for mor
 ```java
 package com.codewithmosh.store.services;
 
-import com.codewithmosh.store.entities.Order_items;
-import com.codewithmosh.store.entities.Orders;
-import com.codewithmosh.store.exception.PaymentException;
+import com.codewithmosh.store.order.Order_items;
+import com.codewithmosh.store.order.Orders;
+import com.codewithmosh.store.payement.PaymentException;
 import com.codewithmosh.store.payement.CheckoutSession;
 import com.codewithmosh.store.payement.IPaymentGateway;
 import com.stripe.exception.StripeException;
@@ -2986,10 +2986,10 @@ Imagine you’re baking a cake 🎂:
 ### 4.2 Deploying The App :
 
 go to railway and add the service as github repo and choose the repo
-and after we need to config the varaible of environment to make jar work correctly
+and after we need to config the variable of environment to make jar work correctly
 ---
 ### 4.2.1 Configuring Production Environment Variable :
-we should go to the site of Railway and add the varaible like : <br>
+we should go to the site of Railway and add the variable like : <br>
 JWT_SECRET <br>
 Refresh_Token_Expire <br>
 Access_Token_Expire ... <br>
@@ -2998,6 +2998,77 @@ but for prod you should write it in the site
 choose the service "your application " and choose the variable and add you variables in the service
 
 ---
+### Modularizing based on feature:
+Instead, use Layer_based we use Feature_based 
+because when use Layer_based in large application  : <br>
+com.codewithmosh.store <br>
+```
+├── controllers
+│   ├── UserController
+│   ├── ProductController
+│   ├── OrderController
+├── services
+│   ├── UserService
+│   ├── ProductService
+│   ├── OrderService
+├── repositories
+│   ├── UserRepository
+│   ├── ProductRepository
+│   ├── OrderRepository
+├── models
+│   ├── User
+│   ├── Product
+│   ├── Order
+```
+**Problem** : <br>
+😢 Everything is mixed together<br>
+😢 Hard to extract a feature into its own microservice<br>
+😢 Changes in one feature affect other packages<br>
+😢 Violates Single Responsibility Principle<br>
+
+**Solution :** <br>
+use the feature_based <br>
+```
+com.codewithmosh.store
+├── user
+│   ├── User.java (entity)
+│   ├── UserDto.java
+│   ├── UserController.java
+│   ├── UserService.java
+│   ├── UserRepository.java
+│   ├── UserMapper.java
+├── product
+│   ├── Product.java
+│   ├── ProductDto.java
+│   ├── ProductController.java
+│   ├── ProductService.java
+│   ├── ProductRepository.java
+│   ├── ProductMapper.java
+├── order
+│   ├── Order.java
+│   ├── OrderDto.java
+│   ├── OrderController.java
+│   ├── OrderService.java
+│   ├── OrderRepository.java
+│   ├── OrderMapper.java
+├── payment
+│   ├── PaymentController.java
+│   ├── PaymentService.java
+│   └── StripePaymentGateway.java
+└── config
+    ├── SecurityConfig.java
+    └── CorsConfig.java
+```
+*Benefits:**
+<br>
+✅ Everything related to "User" is in ONE place<br>
+✅ Easy to understand: "Where's the user logic? In the user package!"<br>
+✅ Easy to extract into separate microservice later<br>
+✅ Team can work on different features without conflicts<br>
+✅ Follows Domain-Driven Design (DDD)<br>
+
+---
+
 ### Modularizing Security Rules :
 Our configuration for Security in our application is like this : 
 ```java
@@ -3036,5 +3107,5 @@ Our configuration for Security in our application is like this :
         }
 ```
 Is have many request with it permission so when i want to search for in specific req is well hard  
-<br> so we Modularizing this :<br>
+<br> so we're Modularizing this :<br>
 we should each end point add in the package related with it for example all the endpoints related with payment should be in the paymenet package

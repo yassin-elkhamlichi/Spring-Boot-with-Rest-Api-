@@ -1,9 +1,8 @@
 package com.codewithmosh.store.payement;
 
-import com.codewithmosh.store.entities.Order_items;
-import com.codewithmosh.store.entities.Orders;
-import com.codewithmosh.store.entities.Status;
-import com.codewithmosh.store.exception.PaymentException;
+import com.codewithmosh.store.order.Order_items;
+import com.codewithmosh.store.order.Orders;
+import com.codewithmosh.store.order.Status;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
