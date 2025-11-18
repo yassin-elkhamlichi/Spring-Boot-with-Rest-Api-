@@ -1228,498 +1228,468 @@ And in Controller class you should add this :
 ```
 
 ---
-
-## 📘 Documenting APIs with Swagger
-
-A tool that automatically generates documentation for your APIs.
-
----
-
-### 🔧 Add Dependency
-
+## Documenting Apis with Swagger :
+A tool that automatically generate documentation for your apis
+first ypu should add this depandency :
 ```xml
-<dependency>
-  <groupId>org.springdoc</groupId>
-  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-  <version>2.8.13</version>
-</dependency>
+   <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.8.13</version>
+   </dependency>
 ```
-
----
-
-### 🌐 Access Swagger UI
-
-After starting your application, go to:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-You can view and test all your APIs there.
-
----
-
-### 🏷️ Change Controller Name in Swagger
-
-Add this annotation to your controller:
-
+and after to acces to swagger you should
+go to http://localhost:8080/swagger-ui.html.
+and after you can see all the Apis in your project
+and also you can test each Api <br>
+if you want to change the names of Controller in swagger
+we should go to controller and add this annotation
 ```java
 @Api(tags = "Cart")
 public class CartController {}
 ```
-
----
-
-### 📝 Add Description to Endpoints
+And i can also add description for each endpoint
+just add this annotation
 
 ```java
 import io.swagger.v3.oas.annotations.Operation;
 
 @PostMapping("/{id}/item")
 @Operation(summary = "Add item to cart")
-public ResponseEntity<ItemCartDto> addToCart() { ... }
+public ResponseEntity<ItemCartDto> addToCart()
+```
+And also you can add desc for param using @Parameter annotation
+
+```java
+    @Operation(summary = "Add item to cart")
+    @PostMapping("/{id}/item")
+    public ResponseEntity<ItemCartDto> addToCart(
+            @Parameter(description = "id of cart")
+            @PathVariable UUID  id,
+            @RequestBody AddItemToCartReqeustDto data
+            ) {
+        var cartItemCartDto = cartService.addToCart(id, data.getProductId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
+    }
 ```
 
 ---
 
-### 📄 Add Description for Parameters
-
-```java
-@Operation(summary = "Add item to cart")
-@PostMapping("/{id}/item")
-public ResponseEntity<ItemCartDto> addToCart(
-        @Parameter(description = "id of cart")
-        @PathVariable UUID id,
-        @RequestBody AddItemToCartReqeustDto data
-) {
-    var cartItemCartDto = cartService.addToCart(id, data.getProductId());
-    return ResponseEntity.status(HttpStatus.CREATED).body(cartItemCartDto);
-}
-```
-
----
-
-## 📂 Handling Files in Requests
-
-When sending a request in **Postman**:
-
-* Use **POST** method.
-* Choose **form-data** in the Body.
-* Set key type to **File** for the file field.
-* Add other fields as **text**.
-* Convert JSON string to object in controller.
-
-Example:
-
-```java
-@Value("${server.port}") String port;
-@Value("${server.server}") String server;
-
-@PostMapping("/upload")
+## How i can work with  Files IN REQ ?? :
+first when i send the req in postman should be Post
+and in the body reqeust i dont choose send data as json
+i choose "data form" option, and first in the key i chose type to file
+instead text
+and after in the value , i select the file,
+and after if i want add object  i add it
+but i need to map it from string to object
+like this in controller :
+ ```java
+    @Value("${server.port}") String port;
+    @Value("${server.server}") String server;
+ @PostMapping("/upload")
 public ResponseEntity<Map<String,String>> uploadFile(
         @RequestPart("file") MultipartFile file,
-        @RequestPart("client") String clientString
-) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    Client client = objectMapper.readValue(clientString, Client.class);
-    String path = "src/resources/static/uploads/" + client.getId() + ".jpg";
-    file.transferTo(Path.of(path));
-    client.setImage("http://" + server + ":" + port + "/uploads/" + client.getId());
-    return client;
+        @RequestPart("client") String ClientString
+        ){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Client client = objectMapper.readValue(ClientString, Client.class);
+        String path = "src/ressoruces/static/uploads/"+cllient.getId()+".jps";
+        path.transferTo(Path.of(path));
+        client.setImage("http//:"+server+"/"+port+"/uploads/"+cllient.getId());
+        return client
 }
-```
-
-> `ObjectMapper` (from Jackson) maps JSON strings to objects.
-
----
-(you are here)
-### 📸 Serve Uploaded Images
-
-You need an endpoint to serve the stored images:
+ ```
+The ObjectMapper is a class from jackson library include in spring
+can mapper  json to object
+the url for image not work you should add endpoint for it
 
 ```java
 import org.springframework.web.bind.annotation.GetMapping;
 
 @GetMapping("photos/{id}")
-public ResponseEntity getPhoto(@PathVariable("id") Long id) {
-    String path = "src/resources/static/uploads/" + id + ".jpg";
-    SystemFileResource fileResource = new SystemFileResource(path);
-    if (!fileResource.exists())
+public ResponseEntity getPhoto(@PathVariable("id") Long id){
+    String path = "src/ressoruces/static/uploads/"+id+".jps";
+    SystemFileRessource fileRessource = new SystemFileRessource(path);
+    if(!fileRessource.exists())
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(fileResource);
+    return ResponseEntity.type(MediaType.IMAGE_JPEG).ok(fileRessource);
 }
 ```
+SystemFileRessource is a class that i call it to get the file from 
+the system
 
-> `SystemFileResource` is a custom class used to retrieve the file from the system.
+---
+# 5 Spring Security :
+First you should add Spring security dependency in your pom file
+and after you get endpoint login automatically generate page login
+and pass and name for user
 
 ---
 
-# 🛡️ 5. Spring Security
+## Authentication Methods :
+1. **Session_based** :
+user send Post/login to server and server check credentials if is valid server will
+create session file where stored information about user and return session id to
+user and after this browser (client side) storage session id in the cookie
+is not scarped because more users mean more storage in the server
+here we where need token based  authentication
+2. **Token_based** : (JWT) (to see how exactly token like you can go to this wibsite https://www.jwt.io/)
+   Rest Api use this method .
+   so token work like this : client send Post/login to server and server check credentials if is valid
+   server will create token(like password content all the thing about user) and return it to user
+   and after if user want to send and other req  is automatically send req with  auth = {token}
+   so for summery the key different is in token the token saved in client and server just decoudage it and extract info
+   and after compare it with the data in bd
+---
+now we need to create package named config,
+and add file to config the spring security,
+so when we went to config spring security
+we nedd to use 3 things **Csrf** and **stateless session** so what this ?
+when we just learn we don't use the session/cookies
+so that named **stateless session** and the RestApi don't use session
+named Stateless RestApi <br>
+**CSRF** is mean CSRF (Cross-Site Request Forgery) is an attack where a malicious site tricks a user’s browser
+into making unwanted requests to your app using the user’s active session
+so when we dont use session we need to disbale csrf (in case we use jwt or dont use anything)
+in the package config we create class named SecurityConfig
+and the third option is **Authorization**
 
-First, add **Spring Security** dependency in your `pom.xml`.
+---
+## 3.1 what is the different between Authentication and Authorization ? :
+### 🔑 1. **Authentication = "Who are you?"**
 
-After that, Spring automatically creates a **login page** and default user credentials.
+> ✅ **Verifying identity** — proving you are **who you say you are**.
+
+#### Examples:
+- Logging in with **email + password**
+- Scanning your **fingerprint**
+- Using **Google Sign-In**
+- Entering a **one-time code (2FA)**
+
+#### In code:
+When you send:
+```json
+{ "email": "you@example.com", "password": "secret123" }
+```
+→ The server checks: *"Is this user real? Is the password correct?"*  
+✅ If yes → **Authenticated!**
+
+> 🧠 Think: **AuthN = "Are you really you?"**
 
 ---
 
-## 🔐 Authentication Methods
+### 🚪 2. **Authorization = "What are you allowed to do?"**
 
-### 1. Session-based Authentication
+> ✅ **Checking permissions** — now that we know **who you are**, what can you access?
 
-* User sends `POST /login`
-* Server validates credentials
-* Server creates a **session** and stores it
-* Client stores **session ID** in cookies
+#### Examples:
+- A regular user **can’t delete** another user’s post
+- An **admin** can access `/api/admin/users`
+- A **guest** can only view public pages
+- A **paid user** can download premium content
 
-> ⚠️ Not scalable — more users mean more storage on server.
+#### In code:
+After login, you try to access:
+```
+DELETE /api/posts/123
+```
+→ Server checks: *"Is this user the owner of post 123? Or an admin?"*  
+✅ If yes → **Authorized!**  
+❌ If no → **403 Forbidden**
+
+> 🧠 Think: **AuthZ = "Are you allowed to do this?"**
+
+---
+### code sending if each one fild :
+> 💡 **401 = "You’re not logged in (or token is bad)"**  
+> 💡 **403 = "You’re logged in, but you don’t have permission"**
 
 ---
 
-### 2. Token-based Authentication (JWT)
 
-> REST APIs use this method.
+### 💬 summery:
+- **Authentication** = **Login** (proving you are you)
+- **Authorization** = **Permissions** (what you’re allowed to do after login)
 
-* Client sends `POST /login`
-* Server validates credentials
-* Server generates **token (JWT)** and sends it back
-* Client stores token and sends it with each request (Authorization header)
-
-💡 **Difference:**
-
-* Token-based: data stored on **client**
-* Session-based: data stored on **server**
-
-Check tokens visually: [https://jwt.io](https://jwt.io)
+> ✅ You **always authenticate first**, then authorize.
 
 ---
-
-## ⚙️ Spring Security Configuration
-
-Create a package `config`, then add a class `SecurityConfig`.
-
+let's return now to configuration file
 ---
-
-### 📋 Stateless Session & CSRF
-
-Since REST APIs are **stateless** (no session or cookies),
-we must **disable CSRF** (Cross-Site Request Forgery protection).
-
----
-
-### 📘 Example Configuration
-
 ```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // first we need to make session stateless
+        //second Disable csrf
+        //third disable default login page
         http
-            .sessionManagement(c ->
-                c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(c ->
-                c.anyRequest().permitAll());
+                .sessionManagement(c ->
+                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(c ->
+                        c.anyRequest().permitAll());
 
-        return http.build();
+            return http.build();
     }
 }
 ```
+this method run automatically in the runtime <br>
+- authorizeHttpRequests(c ->
+c.anyRequest().permitAll());<br> this line give us access for  all the endpoint  
+in our project without authentication
 
-> This allows access to all endpoints (no authentication yet).
-
----
-
-### 🔒 Restrict Specific Endpoints
-
+- if we want to add specific reqeust
 ```java
-http
-    .csrf(csrf -> csrf.disable())
-    .sessionManagement(session ->
-        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-    .authorizeHttpRequests(auth -> auth
+  http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
         .requestMatchers("/carts/**").permitAll()
-        .requestMatchers("/error").permitAll() // ✅ Important!
-        .anyRequest().authenticated());
+                         .requestMatchers("/error").permitAll()  // IMPORTANT!
+                         .anyRequest().authenticated()  // Change back to authenticated
+                 );
 return http.build();
 ```
-
-> `/carts/**` → public
-> `/error` → must be public (prevents redirect loop)
-> All others → require authentication.
-
+this line tell spring security cart/** is public but any other
+request need to be authenticated
+Wow this  works :
+When Spring Security blocks a request with 403, it tries to redirect to the /error endpoint to show the error page.
+But /error was ALSO blocked by .anyRequest().authenticated(),
+so it created an infinite loop or just showed "Forbidden"!
+The fix:
+java.requestMatchers("/error").permitAll()  // ✅ Allows error page to show
+Now when there's an error, Spring can actually display it instead of blocking the error page itself!
 ---
+### Hashing :
+> **Note** : hashing mean crypte your password but without key to decrypte
+you hash code the server get the password and crypte it and compare result with result you have in DB
+but cryptage having key crypte and decrypte with it.
 
-## 🔑 Authentication vs Authorization
-
-| Concept            | Meaning          | Example                   | Response Code      |
-| ------------------ | ---------------- | ------------------------- | ------------------ |
-| **Authentication** | Who are you?     | Login with email/password | `401 Unauthorized` |
-| **Authorization**  | What can you do? | Access admin endpoints    | `403 Forbidden`    |
-
-💬 Summary:
-
-* **AuthN = Login (prove identity)**
-* **AuthZ = Permissions (check access)**
-
----
-
-## 🔐 Password Hashing
-
-To secure passwords, add a `PasswordEncoder` bean:
-
+To make your password more secure you can use hash <br>
+first you should add new bean in you config file like this :
 ```java
-@Bean
-public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-}
+ @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
 ```
-
-And use it before saving a user:
-
+PasswordEncoder is an interface that provides methods to encode and decode passwords.
+and BCryptPasswordEncoder is a class that implements PasswordEncoder and uses the BCrypt algorithm to encode and decode passwords.
+and after you should add this line in the controller before you save the user :
 ```java
 user.setPassword(passwordEncoder.encode(user.getPassword()));
 ```
 
----
-
 ## 5.2 Authentication Management
 
-![AuthenticationManagement](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/blob/06b0ec93b47bbb25f55a2dc904571d1ce9293d1a/AuthentecationManagement.jpeg)
+![AuthentecationManagement](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/blob/06b0ec93b47bbb25f55a2dc904571d1ce9293d1a/AuthentecationManagement.jpeg)
 
----
-
-### 🧩 Manual Authentication Example
-
+I use service to manage authentication but spring security
+can automatically manage authentication for you
+instead of this :
 ```java
 @Service
 @AllArgsConstructor
 public class UserService {
     private final PasswordEncoder passwordEncoder;
-
-    public String authUser(AuthUserDto authUserDto, UserRepository userRepository) {
+    public String authUser(AuthUserDto authUserDto , UserRepository userRepository){
         var user = userRepository.findByEmail(authUserDto.getEmail());
-        if (user == null)
+        if(user == null)
             throw new UserNotFoundException();
 
-        if (!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
+        if(!passwordEncoder.matches(authUserDto.getPassword(), user.getPassword()))
             throw new InvalidPasswordException();
 
         return "Authenticated";
     }
 }
 ```
-
----
-
-### ⚙️ AuthenticationManager & DaoAuthenticationProvider
-
-Spring provides these classes automatically:
-
-* **AuthenticationManager** → orchestrates authentication
-* **DaoAuthenticationProvider** → handles credentials
-* **UserDetailsService** → loads user from DB
-* **PasswordEncoder** → verifies password
-
----
-
-### 🧠 UserDetailsService Implementation
-
+This logic exist in spring security <br>
+we have the  **AuthenticationManager** this interface super interface for all authentication managers
+and we have **AuthenticationProvider** implemented from it and we have **DaoAuthenticationProvider**
+extends from the last one and this last one has two fields :
+- **userDetailsService** and **passwordEncoder** and the methode authenticate()
+<br> **userDetailsService** is an object find the user by String (byUserName)
+but you can use another field like email
+so for simple userDetailsService get the user from bd if exist
+and after the DaoAuthenticationProvider use the passwordEncoder to compare the password
+and after generate response automatically and also handle exception  for you
+userDetailsService this method have methode named loadByUsername()
+and this method return **UserDetails**
+so what is **UserDetails** ?
+is in interface has all the methods you need for user like
+isAccountNonExpired(), isAccountNonLocked(), isCredentialsNonExpired(), isEnabled() ...
+and also 2 fields : username and password
+soo the new version of our service is :
 ```java
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-
     @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
-
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
-
-        return new User(
-                user.getEmail(),
-                user.getPassword(),
-                Collections.emptyList()
-        );
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        
+        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("user not found"));
+        return new User(user.getEmail(),
+                user.getPassword(), 
+                Collections.emptyList());
     }
 }
 ```
-
----
-
-### 🧩 DaoAuthenticationProvider Bean
-
+but we need some things in config file to make it work
 ```java
-public final UserDetailsService userDetailsService;
-
-@Bean
-public DaoAuthenticationProvider authenticationProvider() {
-    var provider = new DaoAuthenticationProvider();
-    provider.setPasswordEncoder(passwordEncoder());
-    provider.setUserDetailsService(userDetailsService);
-    return provider;
-}
+ public final UserDetailsService userDetailsService;
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(){
+        var provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        return provider;
+    }
 ```
-
-Spring automatically injects your `UserService` (because it implements `UserDetailsService`).
-
----
-
-### 🧱 AuthenticationManager Bean
-
+so how this work?<br>
+first we give the passwordEncoder from the Bean we already wrote.<br>
+and what about UserDetailsService ?<br>
+we declared userService as service and is implement from
+UserDetailsService  so in the runtime spring will inject  our UserService into
+<br>SecurityConfig and save it in the field userDetailsService.
+After this we need to  add this line to the config file :
 ```java
-@Bean
+   @Bean
 public AuthenticationManager authenticationManager(
         AuthenticationConfiguration config
 ) throws Exception {
-    return config.getAuthenticationManager();
+    return  config.getAuthenticationManager();
 }
 ```
-
-> Retrieves Spring’s built-in `AuthenticationManager` that uses your provider and encoder.
-
----
-
-### 🚀 Controller Authentication Example
-
-```java
+This method retrieves the pre-configured AuthenticationManager from Spring Security,
+which uses your DaoAuthenticationProvider and UserDetailsService internally
+And after we need to add this in the controller : <br>
 private final AuthenticationManager authenticationManager;
-
-@PostMapping("login")
-public ResponseEntity<Void> auth(
-        @Valid @RequestBody AuthUserDto authUserDto
-) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            authUserDto.getEmail(),
-            authUserDto.getPassword()
-        )
-    );
-    return ResponseEntity.ok().build();
-}
+```java
+    private finale AuthenticationManager authenticationManager;
+    @PostMapping("login")
+    public ResponseEntity<Void> auth(
+            @Valid @RequestBody AuthUserDto authUserDto
+    ) {
+       authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       authUserDto.getEmail(),
+                       authUserDto.getPassword()
+               )
+       );
+        return ResponseEntity.ok().build();
+    }
 ```
+we should add management field in the controller because is resbonsable for
+authentication <br>
+so in summery this work like this :<br>
+The controller sends the credentials to the AuthenticationManager.
 
+- The AuthenticationManager delegates the work to the configured DaoAuthenticationProvider.
+
+- The DaoAuthenticationProvider uses:
+
+  - your custom UserDetailsService to load the user from the database.
+
+  - your configured PasswordEncoder to validate the password.
+
+  - If authentication succeeds, Spring Security marks the user as authenticated in the security context automatically.
+  - If it fails, Spring throws exceptions like:
+
+    - UsernameNotFoundException → user not found
+
+    - BadCredentialsException → invalid password
+    
 ---
+## 5.3  Generate Json Web Tokens(JWT) :
 
-### ⚙️ How It Works
-
-1. Controller sends credentials to `AuthenticationManager`.
-2. `AuthenticationManager` delegates to `DaoAuthenticationProvider`.
-3. Provider uses:
-
-    * `UserDetailsService` → load user
-    * `PasswordEncoder` → verify password
-4. If successful → user is authenticated
-5. If failed → Spring throws:
-
-    * `UsernameNotFoundException`
-    * `BadCredentialsException`
-
-
----
-
-## 5.3 Generate JSON Web Tokens (JWT)
-
-First, add these dependencies:
+First you should add this dependency :
 
 ```xml
-<dependency>
+ <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-api</artifactId>
     <version>0.12.6</version>
-</dependency>
-
-<dependency>
+ </dependency>
+ <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-impl</artifactId>
     <version>0.12.6</version>
     <scope>runtime</scope>
-</dependency>
-
-<dependency>
+ </dependency>
+ <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-jackson</artifactId>
     <version>0.12.6</version>
     <scope>runtime</scope>
-</dependency>
+ </dependency>
 ```
 
----
-
-### 🔹 JwtService
-
+and after you should add new service named  JwtService
 ```java
 @Service
 public class JwtService {
-    final long tokenExpiration = 86400; // token expires in 24 hours
+    final long tokenExpiration = 86400; // token well expires in 24 hours
+    public String generateToken(String email){
+    return Jwts.builder()
+            .subject(email)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+            .compact();
 
-    public String generateToken(String email) {
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-                .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
-                .compact();
     }
 }
 ```
-
----
-
-### 🧠 Explanation
+Explication of the code :
+```java
+public String generateToken(String email){
+```
+Declares a method that takes an `email` (used as the user identifier) and returns a JWT as a `String`.
 
 ```java
-public String generateToken(String email) {
+    return Jwts.builder()
 ```
-
-> Declares a method that takes an `email` (used as the user identifier) and returns a JWT string.
+Starts building a new JWT using the **Java JWT (jjwt)** library’s fluent API.
 
 ```java
-return Jwts.builder()
+            .subject(email)
 ```
-
-> Starts building a new JWT using the **JJWT** library’s fluent API.
+Sets the **`sub` (subject)** claim of the JWT to the user’s email — typically used to identify the principal (user).
 
 ```java
-.subject(email)
+            .issuedAt(new Date())
 ```
-
-> Sets the **`sub` (subject)** claim — identifies the user.
+Sets the **`iat` (issued at)** claim to the current timestamp, indicating when the token was created.
 
 ```java
-.issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
 ```
-
-> Sets the **`iat` (issued at)** claim.
+Sets the **`exp` (expiration)** claim: the token will expire after `tokenExpiration` seconds (since `1000 * tokenExpiration` converts seconds to milliseconds).
 
 ```java
-.expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+            .signWith(Keys.hmacShaKeyFor("secret".getBytes()))
 ```
-
-> Sets the **`exp` (expiration)** claim — token expires after 24 hours.
+Signs the JWT using **HMAC-SHA256** with a hardcoded secret key (`"secret"`).  
+is convert constant value "secret" to Bytes
+⚠️ **Warning**: In production, never hardcode secrets — use environment variables or a secure config.
 
 ```java
-.signWith(Keys.hmacShaKeyFor("secret".getBytes()))
+            .compact();
 ```
+Finalizes and **serializes the JWT** into a compact, URL-safe string (e.g., `xxxxx.yyyyy.zzzzz`).
 
-> Signs the JWT with **HMAC-SHA256** using a secret key.
-> ⚠️ Don’t hardcode this key — use environment variables in production.
 
-```java
-.compact();
-```
+✅ **Result**: A signed, time-limited JWT string that represents an authenticated user (identified by email).
 
-> Builds the token and returns it as a compact string (`xxxxx.yyyyy.zzzzz`).
-
-✅ **Result:** a signed JWT identifying the authenticated user.
-
----
-
-### 🔹 JwtResponseDto
-
+And after you should add new dto named JwtResponseDto
 ```java
 @Data
 @AllArgsConstructor
@@ -1727,45 +1697,53 @@ public class JwtResponseDto {
     private String token;
 }
 ```
-
----
-
-### 🔹 AuthController (JWT Return)
-
+and after we return to authController and
+change the return type of auth method to JwtResponseDto
 ```java
-@PostMapping("login")
-public ResponseEntity<JwtResponseDto> auth(
-        @Valid @RequestBody AuthUserDto authUserDto
-) {
-    authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                    authUserDto.getEmail(),
-                    authUserDto.getPassword()
-            )
-    );
-    String token = jwtService.generateToken(authUserDto.getEmail());
-    return ResponseEntity.ok(new JwtResponseDto(token));
-}
+  @PostMapping("login")
+    public ResponseEntity<JwtResponseDto> auth(
+            @Valid @RequestBody AuthUserDto authUserDto
+    ) {
+       authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       authUserDto.getEmail(),
+                       authUserDto.getPassword()
+               )
+       );
+        String token = jwtService.generateToken(authUserDto.getEmail());
+        return ResponseEntity.ok(new JwtResponseDto(token));
+    }
+```
+but this type of secret show error because is not secure<br>
+so we need  first to make "secret" as value and save it in the application file
+and after we call it in the jwtService <br>
+and after we need to use spring dotenv(to save varibale of environment)
+### fast documentation about spring dotenv  :
+1. Add the dependency to your project:
+```xml
+    <dependency>
+        <groupId>me.paulschwarz</groupId>
+        <artifactId>spring-dotenv</artifactId>
+        <version>{version}</version>
+    </dependency>
 ```
 
 ---
 
-### ⚠️ Making the Secret Secure
+### 🔹 What is `spring-dotenv`?
 
-Instead of hardcoding `"secret"`, store it in a `.env` file and use **spring-dotenv**.
+`spring-dotenv` is a **third-party library** (not part of Spring Boot itself) that allows your **Spring Boot application to load environment variables from a `.env` file** — just like you would in Node.js, Python, or other frameworks.
 
-#### Add the dependency
+GitHub: https://github.com/paulschwarz/spring-dotenv
 
-```xml
-<dependency>
-    <groupId>me.paulschwarz</groupId>
-    <artifactId>spring-dotenv</artifactId>
-    <version>{version}</version>
-</dependency>
-```
+---
 
-#### Example `.env` file
+### 🔹 What does it do?
 
+By default, **Spring Boot does NOT read `.env` files**.  
+But with this library, you can create a file like:
+
+**`.env`** (in your project root):
 ```env
 DB_URL=jdbc:mysql://localhost:3306/mydb
 DB_USERNAME=root
@@ -1773,7 +1751,7 @@ DB_PASSWORD=secret123
 JWT_SECRET=my-super-secret-key
 ```
 
-#### In `application.properties`
+Then, in your **`application.properties`** or **`application.yml`**, you can use those values:
 
 ```properties
 spring.datasource.url=${DB_URL}
@@ -1782,147 +1760,268 @@ spring.datasource.password=${DB_PASSWORD}
 app.jwt.secret=${JWT_SECRET}
 ```
 
-✅ This keeps secrets **outside your code**.
-
-You can add `.env.example` (without values) to share required keys safely with your team.
+✅ The `spring-dotenv` library **loads the `.env` file at startup** and makes its variables available as **system/environment properties** — so Spring can resolve `${...}` placeholders.
 
 ---
 
-## 5.4 Validate JWT
+### 🔹 Why would you need it?
 
-Add a validation method to your `JwtService`:
+#### ✅ Benefits:
+1. **Keep secrets out of code**  
+   → Never hardcode passwords, API keys, or URLs in your source.
+2. **Easy local development**  
+   → Each developer can have their own `.env` without affecting others.
+3. **Consistent with modern dev practices**  
+   → Works like `.env` in React, Django, Express, etc.
+4. **Ignored by Git**  
+   → Add `.env` to `.gitignore` to avoid leaking secrets.
 
+#### 🚫 Without it:
+- You’d have to manually set env vars in your OS/shell:
+  ```bash
+  export DB_PASSWORD=secret123
+  java -jar app.jar
+  ```
+- Or pass them via command line:
+  ```bash
+  java -jar -DDB_PASSWORD=secret123 app.jar
+  ```
+- Or store secrets in `application.properties` → **bad for security!**
+
+---
+so now  .env is ignored by Git
+so what if we work with team i need to tell others
+what environment variables are required to run the app — without exposing real secrets.
+so to resolve this we add file named .env.example the text type the file
+and type in it just the keys without values
+> after generate the token how is validate?
+## 5.4 Validate JWT :
+we need if the token correct if is expired ..
+so first we need add this method in JwtService
 ```java
-public boolean validateToken(String token) {
-    try {
-        var claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.getExpiration().after(new Date());
-    } catch (JwtException e) {
-        return false;
+  public boolean validateToken(String token){
+        try{
+            var claims = Jwts.parser()
+                        .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException e) {
+            return false;
+        }
     }
-}
 ```
-
----
-
-### 🔹 Manual Validation Endpoint
-
+and after we need to add this method in authController
 ```java
 @PostMapping("validate")
 public boolean validate(
-        @RequestHeader("Authorization") String token
-) {
-    var tokenWithoutBearer = token.replace("Bearer", "");
-    return jwtService.validateToken(tokenWithoutBearer);
+@RequestHeader("Authorization") String token
+){
+var tokenWithoutBearer = token.replace("Bearer","");
+return jwtService.validateToken(tokenWithoutBearer);
 }
 ```
-
----
-
-## 🔹 Using Filters for Automatic JWT Validation
-
-A **Filter** runs before your controller to inspect, validate, or modify requests.
-
-### Example: Logging Filter
-
+but this way is manual validation <br> we need
+to make spring security do this we use the Filter  class <br>
+the filter class is a class that implements the Filter interface<br>
+and we use it before the controller is check for authintication
+, modify headrer ...<br>
+so this a simple filter :
 ```java
 @Component
-public class LoggingFilter extends OncePerRequestFilter {
+public class LoggingFilter  extends OncePerRequestFilter {
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("Request: " + request.getRequestURI());
-        System.out.println("Method: " + request.getMethod());
+              HttpServletResponse response,
+              FilterChain filterChain) throws ServletException, IOException
+    {
+        System.out.println("Request :  "+ request.getRequestURI());
+        System.out.println("Method :  "+ request.getMethod());
         filterChain.doFilter(request, response);
-        System.out.println("Response: " + response.getStatus());
+        System.out.println("Response : "+ response.getStatus());
     }
 }
 ```
-
----
-
-### JWT Authentication Filter
-
+And now we see how we can create filter to check the validation :
 ```java
-@Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        if( authHeader == null || !authHeader.startsWith("Bearer")){
             filterChain.doFilter(request, response);
             return;
         }
 
         var token = authHeader.replace("Bearer ", "");
-
-        if (!jwtService.validateToken(token)) {
+        if(!jwtService.validateToken(token)){
             filterChain.doFilter(request, response);
             return;
         }
-
-        var authentication = new UsernamePasswordAuthenticationToken(
+        var authintication = new UsernamePasswordAuthenticationToken(
                 jwtService.getEmail(token),
                 null,
                 null
         );
-
-        authentication.setDetails(
+        authintication.setDetails(
                 new WebAuthenticationDetailsSource().buildDetails(request)
         );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authintication);
         filterChain.doFilter(request, response);
     }
 }
 ```
 
----
-
-### 🔍 Explanation
-
-1. Gets the `Authorization` header.
-2. Checks if it starts with `Bearer`.
-3. Extracts and validates the JWT.
-4. If valid → creates an `Authentication` object and stores it in Spring’s context.
-5. Proceeds with the filter chain.
-
-✅ After this filter runs, Spring Security knows who the current user is.
-
----
-
-### 🔹 Add Filter to SecurityConfig
+### 🔍 Full Code with Line-by-Line Explanation
 
 ```java
-http
-    .csrf(AbstractHttpConfigurer::disable)
-    .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-    .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/carts/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/users").permitAll()
-            .requestMatchers("/auth/validate").permitAll()
-            .requestMatchers("/auth/login").permitAll()
-            .requestMatchers("/error").permitAll()
-            .anyRequest().authenticated()
-    )
-    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-return http.build();
+protected void doFilterInternal(
+    HttpServletRequest request,
+    HttpServletResponse response,
+    FilterChain filterChain
+) throws ServletException, IOException {
 ```
+This is the core method of a Spring Security filter. It runs on **every HTTP request** to check if the user is authenticated (via JWT in this case).
 
 ---
+
+```java
+    var authHeader = request.getHeader("Authorization");
+```
+Gets the value of the `Authorization` header from the incoming HTTP request.  
+Example: `"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
+
+---
+
+```java
+    if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        filterChain.doFilter(request, response);
+        return;
+    }
+```
+✅ **If there’s no `Authorization` header**, or it **doesn’t start with `"Bearer "`**,  
+→ skip authentication (maybe it’s a public endpoint),  
+→ pass the request to the next filter (or controller) using `filterChain.doFilter(...)`,  
+→ and **stop processing** (`return`).
+
+🔒 This allows unauthenticated access to public routes (like `/login`, `/register`).
+
+---
+
+```java
+    var token = authHeader.replace("Bearer ", "");
+```
+Extracts the actual JWT by **removing the `"Bearer "` prefix**.  
+Now `token` contains only the JWT string: `"eyJhbGciOiJIUzI1NiIsInR5cCI6..."`
+
+---
+
+```java
+    if (!jwtService.validateToken(token)) {
+        filterChain.doFilter(request, response);
+        return;
+    }
+```
+Asks your `JwtService` to **verify the token**:
+- Is it signed correctly?
+- Has it expired?
+- Is it malformed?
+
+> ❌ If **invalid**, again skip auth and continue (though in practice, you might want to return 401 here — more on that below).  
+> ✅ If **valid**, proceed.
+
+> ⚠️ **Note**: In production, you should usually **reject invalid tokens** with a 401 error instead of silently continuing.
+
+---
+
+```java
+    var authintication = new UsernamePasswordAuthenticationToken(
+        jwtService.getEmail(token),
+        null,
+        null
+    );
+```
+Creates an **authenticated `Authentication` object**:
+- **Principal**: the user’s email (extracted from the JWT),
+- **Credentials**: `null` (because JWT is stateless — no password needed after login),
+- **Authorities**: `null` (⚠️ this is a problem — see note below).
+This object tells Spring Security: “This user is authenticated.”
+
+🔸 **Typo**: variable name should be `authentication`, not `authintication`.
+
+---
+
+```java
+    authintication.setDetails(
+        new WebAuthenticationDetailsSource().buildDetails(request)
+    );
+```
+Adds extra request details (like client IP, session ID) to the authentication object.  
+Useful for auditing or security logging.
+
+---
+
+```java
+    SecurityContextHolder.getContext().setAuthentication(authintication);
+```
+✅ **This is the key line!**  
+It **stores the authenticated user** in Spring Security’s context.  
+Now, anywhere in your app (controllers, services), you can get the current user via:
+> ```java
+> SecurityContextHolder.getContext().getAuthentication().getName();
+> ```
+
+---
+
+```java
+    filterChain.doFilter(request, response);
+```
+Finally, **passes the request** to the next filter or your controller.  
+At this point, Spring Security considers the user **authenticated**.
+
+---
+
+
+### 🧩 What Does This Code Do **Altogether**?
+
+This is a **JWT Authentication Filter** that:
+
+1. **Intercepts every HTTP request**.
+2. **Looks for a `Bearer <token>`** in the `Authorization` header.
+3. If found:
+    - Validates the JWT.
+    - Extracts the user’s email from it.
+    - Creates an `Authentication` object.
+    - Stores it in Spring Security’s context.
+4. If no token (or invalid), it **lets the request continue** — but **unauthenticated**.
+
+✅ After this filter runs, your Spring Boot controllers can:
+- Use `@PreAuthorize("hasRole('USER')")`
+- Access the current user via `SecurityContextHolder`
+- Be protected by Spring Security rules
+
+---
+
+and after we need to add this filter as primary filter in securityconfig
+```java
+ http
+                 .csrf(AbstractHttpConfigurer::disable)
+                 .sessionManagement(session -> session
+                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                 .authorizeHttpRequests(auth -> auth
+                         .requestMatchers("/carts/**").permitAll()
+                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                         .requestMatchers("/auth/validate").permitAll()
+                         .requestMatchers("/auth/login").permitAll()
+                         .requestMatchers("/error").permitAll()
+                         .anyRequest().authenticated()  // Change back to authenticated
+                 )
+                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+```
+---
 ### Accessing the Current User :
-ths the way how you can get you User data in the Url :
+This the way how you can get you User data in the Url :
 in the AuthController :
 ```java
  @GetMapping("/me")
@@ -1942,11 +2041,11 @@ in the AuthController :
 ```
 ---
 ### Access Token & Refresh Token :
-when we generate token we should generate two tokens 
-the first name access token should be short to expire (5 to 10 min)
+when we generate token we should generate two tokens <br>
+the first name access token should be short to expire (5 to 10 min)<br>
 and the second is  refresh token this is the token will send in the req when 
-the token access expire should be have long time to expire (7 to 30 days)
-so you should go to jwtService and write this : 
+the token access expire should be having long time to expire (7 to 30 days)
+<br> so you should go to jwtService and write this : 
 
 ```java
 public String generateAccessToken(UserDto userDto) {
@@ -2021,7 +2120,7 @@ public class JwtConfig {
 }
 ```
 ### Refreshing the token :
-to refresh the token we need add new method can refresh the token and get new token access 
+To refresh the token we need add new method can refresh the token and get new token access 
 now i write the methode in the controller :
 
 ```java
@@ -2042,7 +2141,7 @@ and don t forget add the token refresh as parameter in the http cookies in postm
 
 ---
 ### Adding Role To Users :
-we need to divise users to ADMIN or User.
+we need to divise users to ADMIN or User.<br>
 In the big Application we should add new table named Roles but in small project no need it we can just
 add column in user table this is the first step 
 and the second step is add the Role enum in the entities package :
@@ -2053,13 +2152,13 @@ public enum Role {
     ADMIN
 }
 ``` 
-and add field Role in the User entity 
+And add field Role in the User entity 
 ```java
  @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Role role;
 ```
-and after this  you should go to the jwt service to insert this Role 
+And after this  you should go to the jwt service to insert this Role 
 in json web token 
 ```java
   return Jwts.builder()
@@ -2072,7 +2171,7 @@ in json web token
                 .signWith(jwtConfig.getSecretKey())
                 .compact();
 ```
-andd finally you should go  to userController and in the registerUser
+And finally you should go  to userController and in the registerUser
 set the 'User' to new users :
 ```java
   user.setRole(Role.USER);
@@ -2081,15 +2180,15 @@ set the 'User' to new users :
 ---
 #### Role based Authorization 
 
-first we should add this two exception hundler in the security config :
+first we should add this two exception handler in the security config :
 
 ```java
  .exceptionHandling(c -> {
-                                        c.authenticationEntryPoint(
-                                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
-                                        c.accessDeniedHandler(((request, response, accessDeniedException) -> response
-                                                        .setStatus(HttpStatus.FORBIDDEN.value())));
-                                });
+                    c.authenticationEntryPoint(
+                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                    c.accessDeniedHandler(((request, response, accessDeniedException) -> response
+                                .setStatus(HttpStatus.FORBIDDEN.value())));
+                    });
 ```
 
 explaining for this two methods :
@@ -2174,7 +2273,7 @@ Tells Spring Security:
 > - If the user **is logged in but lacks permission** → return **403**”
 
 ---
-lets back to "Role based Authorization" :
+let's back to "Role based Authorization" :
 the first thing the admin should have controller 
 named AdminController
 and after this  you should add new autherization 
@@ -2198,7 +2297,7 @@ and finally we need add the authority in the jwtAuthenticationfilter
          List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 ```
 ### Refactoring the JwtService : 
-instead of write all the code in the jwtService we can divise into 2 part
+instead of write all the code in the jwtService we can devise into 2 part
 part in the services/Jwt  class
 ```java
 public class Jwt {
@@ -2238,7 +2337,8 @@ public class Jwt {
 
 }
 ```
-and the other part in the jwtServcie :
+and the other part in the jwtService :
+
 ```java
 
 @Service
@@ -2250,7 +2350,7 @@ public class JwtService {
         return generateToken(user, jwtConfig.getTimeOutA());
     }
 
-    public Jwt generateRefershToken(User user) {
+    public Jwt generateRefreshToken(User user) {
         return generateToken(user, jwtConfig.getTimeOutR());
     }
 
@@ -2287,29 +2387,29 @@ public class JwtService {
 }
 ```
 ### Logging out users :
-their two approaches to log out in jwt :
-1. Client_side logout : 
-->Delete the access token from memory of storage
-->Remove the refresh token(by clearing the cookie)
-->Simple to implement
-->Tokens are valid until they expire !!!!!!!!
-->Best for low-risk scenarios
-2. Server_side logout :
-->Store a list of active or removed tokens in a databases or cache
-->when a user logs out , mark their token as invalid
-->During each request,check if the token is blacklist
-->Provides a true logout experience
-->Adds complexity and require token look up on each request
-->Best for high-security apps
+their two approaches to log out in jwt :<br>
+1. Client_side logout : <br>
+->Delete the access token from memory of storage<br>
+->Remove the refresh token(by clearing the cookie)<br>
+->Simple to implement<br>
+->Tokens are valid until they expire !!!!!!!!<br>
+->Best for low-risk scenarios<br>
+2. Server_side logout :<br>
+->Store a list of active or removed tokens in a databases or cache<br>
+->when a user logs out , mark their token as invalid<br>
+->During each request,check if the token is blacklist<br>
+->Provides a true logout experience<br>
+->Adds complexity and require token look up on each request<br>
+->Best for high-security apps<br>
 ---
 ### Using Auth Providers :
-Instead of config security manully you can use Auth Providers like
-Auth0 , Amazon Cognito , firbase authentication , Okta (is a third part)
+Instead of config security manually you can use Auth Providers like
+Auth0 , Amazon Cognito , Firebase authentication , Okta (is a third part)
 this give you automatically use the feature like "email verification , password resets,account lockouts,social login ..."
 but you have the choice !!!!!
 ---
 we should add new exception handler to handle the exception about can't get the object in java 
-"desirialization" exceptition 
+"deserialization" exception 
 so we add in the GlobalExceptionHandler class this :
 ```java
 @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -2325,8 +2425,8 @@ Map.of("error" , "Invalid request body")
 
 ## **5. Payment :**
 we work with **Stripe** <br>
-thier two ways to use Stripe : <br>
-**Stripe Chekout** : <br>
+their two ways to use Stripe : <br>
+**Stripe Checkout** : <br>
 -> Simpler, hosted solution .<br>
 -> Redirect the user to Stripe<br>
 -> Stripe handles all the complexity <br>
@@ -2341,7 +2441,7 @@ thier two ways to use Stripe : <br>
 
 ![PaymentProcess](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/PaymentProcess.jpeg)
 
-**Decription** :
+**Description** :
 
 ### 🌐 **The Full Journey: From "Checkout" to "Order Confirmed"**
 *(All pieces connected: sessions, SDK, webhooks, security)*
@@ -2395,7 +2495,7 @@ thier two ways to use Stripe : <br>
   → Changes order `#1001` from `PENDING` → `PAID`.  
   → *No session used here* – this is permanent and reliable.
 
-the weebhook is when to sides notify it auto :
+the webhook is when to side notify it auto :
 ![Webhook](https://github.com/yassin-elkhamlichi/Spring-Boot-Doc-Rest-Api-dev-/WebHook.jpeg)]
 
 ---
@@ -2432,8 +2532,8 @@ first we add the depandency in the pom.xml :
             <version>27.1.0</version>
         </dependency>
 ```
-and after we should get key secret from Stripe in the browser 
-and inject it in our project (save it in the .env)
+and after we should get key secret from Stripe in the browser <br>
+and inject it in our project (save it in the .env)<br>
 and after we should config the strip in the StripeConfig class :
 ```java
 @Configuration
@@ -2449,7 +2549,7 @@ public class StripeConfig {
 ```
 
 #### 5.2.2 Creating a checkout Session:
- in the OrderService in Checkout method we write this :
+In the OrderService in Checkout method we write this :
 ```java
 
 @RequiredArgsConstructor // (this for don't create beans for webSitUrl') well create just for fields has final constraint
@@ -2502,15 +2602,15 @@ public CheckOutResponseDto CheckingOut(CheckOutRequestDto data) throws StripeExc
 
 --- 
 ### Hundle the Stripe Exception :
-thier many exception related with stripe like : <br>
+their many exception related with stripe like : <br>
 - Invalid Api Key
 - Network issues
 - Bad requests (e.g. negative amount)
 - Stripe service downtime
-so we need to hundle all this cases 
+so we need to handle all this cases 
 ----
 ### Decoupling from Stripe :
-the last way is bad becouse is not easy to maintenence
+the last way is bad because is not easy to maintenance
 so we should to add new Interface in the service name "IPaymentGateway"
 
 ```java
@@ -2518,7 +2618,7 @@ public interface IPaymentGateway {
     CheckoutSession createCheckoutSession(Orders order);
 }
 ```
-then create class " CheckoutSession" 
+then create class "CheckoutSession" 
 ```java
 @AllArgsConstructor
 @Getter
@@ -2526,7 +2626,7 @@ public class CheckoutSession {
     private String checkoutUrl;
 }
 ```
-and finally add class for the specific paymentGateway lake stripe,paybal..
+and finally add class for the specific paymentGateway lake stripe,PayPal..
 ```java
 @Service
 @RequiredArgsConstructor
@@ -3108,4 +3208,4 @@ Our configuration for Security in our application is like this :
 ```
 Is have many request with it permission so when i want to search for in specific req is well hard  
 <br> so we're Modularizing this :<br>
-we should each end point add in the package related with it for example all the endpoints related with payment should be in the paymenet package
+we should each end point add in the package related with it for example all the endpoints related with payment should be in the payment package
