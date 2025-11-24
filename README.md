@@ -71,21 +71,82 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    USER ||--o{ ORDER : places
-    USER {
+    USERS ||--|| PROFILES : "has details"
+    USERS ||--|{ ADDRESSES : "lives at"
+    USERS ||--|{ ORDERS : "places"
+    USERS ||--|{ WISHLIST : "favorites"
+
+    USERS {
+        bigint id PK
         string username
+        string email
         string role
+        string password
     }
-    ORDER ||--|{ ORDER_ITEM : contains
-    ORDER {
-        float total_price
+
+    PROFILES {
+        bigint id PK,FK
+        string bio
+        string phone_number
+        date date_of_birth
+        int loyalty_points
+    }
+
+    ADDRESSES {
+        bigint id PK
+        string street
+        string city
+        string state
+        string zip
+        bigint user_id FK
+    }
+
+    CATEGORIES ||--|{ PRODUCTS : "classifies"
+    CATEGORIES {
+        tinyint id PK
+        string name
+    }
+
+    PRODUCTS ||--|{ CART_ITEMS : "in cart"
+    PRODUCTS ||--|{ ORDER_ITEMS : "purchased"
+    PRODUCTS ||--|{ WISHLIST : "wished for"
+    PRODUCTS {
+        bigint id PK
+        string name
+        decimal price
+        longtext description
+        tinyint category_id FK
+    }
+
+    CART ||--|{ CART_ITEMS : "contains"
+    CART {
+        uuid id PK
+        date dateCreated
+    }
+
+    CART_ITEMS {
+        bigint id PK
+        uuid cart_id FK
+        bigint product_id FK
+        int quantity
+    }
+
+    ORDERS ||--|{ ORDER_ITEMS : "includes"
+    ORDERS {
+        bigint id PK
+        bigint customer_id FK
+        datetime created_at
+        decimal total_price
         string status
     }
-    PRODUCT ||--o{ ORDER_ITEM : included_in
-    PRODUCT {
-        string name
-        float price
-        int stock
+
+    ORDER_ITEMS {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id FK
+        decimal unit_price
+        decimal total_price
+        int quantity
     }
 ```
 
