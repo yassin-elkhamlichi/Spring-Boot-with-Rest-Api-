@@ -87,8 +87,5 @@ http://localhost:8080/swagger-ui.html
 ## 📬 Contact
 **Yassine El Khamlichi**
 * **Email:** yassinelkhamlichi98@gmail.com
-* **LinkedIn:** [Your Profile Link]
+* **LinkedIn:** yassinelkhamlichi
 ````
-
-**Next Step:**
-Would you like me to generate a **Postman Test Script** example (JavaScript) that you can actually put *inside* your repository (in a folder called `tests/`) to prove you know how to do it?
