@@ -17,6 +17,28 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
 * **Custom Filters:** `OncePerRequestFilter` utilized to intercept requests and validate tokens before hitting the security context.
 * **Role-Based Access Control (RBAC):** Distinct access levels for `ADMIN` (Product management) and `USER` (Shopping).
 
+sequenceDiagram
+    participant User
+    participant Filter as JwtAuthFilter
+    participant Controller as AuthController
+    participant Service as UserService
+    participant DB as MySQL Database
+
+    User->>Controller: POST /api/auth/login (username, password)
+    Controller->>Service: authenticate(username, password)
+    Service->>DB: findByUsername()
+    DB-->>Service: UserDetails
+    Service-->>Controller: Return User & Generate JWT
+    Controller-->>User: HTTP 200 OK (Access Token)
+
+    Note over User, Filter: Subsequent Requests
+    User->>Filter: GET /api/orders (Header: Bearer Token)
+    Filter->>Filter: validateToken()
+    Filter->>Controller: Forward Request (SecurityContext Set)
+    Controller->>DB: Fetch Data
+    DB-->>Controller: Order Data
+    Controller-->>User: HTTP 200 OK (JSON)
+    
 ### 🏗️ Architecture & Design
 * **Feature-Based Packaging:** Code is organized by domain features (e.g., `user`, `product`, `order`) rather than technical layers, improving scalability and maintainability.
 * **DTO Pattern:** Strict separation between Database Entities and API responses using **MapStruct** for high-performance, type-safe mapping.
