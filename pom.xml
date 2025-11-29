@@ -8,7 +8,7 @@
         <version>3.4.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.codewithmosh</groupId>
+    <groupId>com.yassineproject</groupId>
     <artifactId>store</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>store</name>
@@ -172,8 +172,8 @@
                 <version>10.15.0</version>
                 <configuration>
                     <url>jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&amp;allowPublicKeyRetrieval=true</url>
-                    <user>user</user>
-                    <password>Yassin@4545</password>
+                    <user>${env.USER_NAME}</user>
+                    <password>${env.PASSWORD}</password>
                     <cleanDisabled>false</cleanDisabled>
                 </configuration>
             </plugin>
