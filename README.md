@@ -13,10 +13,10 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
 ## 🚀 Key Features
 
 ### 🛡️ Security & Authentication
-* **Stateless Authentication:** Implemented using **Spring Security** and **JWT (JSON Web Tokens)**.
-* **Custom Filters:** `OncePerRequestFilter` utilized to intercept requests and validate tokens before hitting the security context.
-* **Role-Based Access Control (RBAC):** Distinct access levels for `ADMIN` (Product management) and `USER` (Shopping).
-
+* **Dual Token Architecture:** Implemented **Access Tokens** (short-lived) and **Refresh Tokens** (long-lived) to balance security and user experience.
+* **Stateless Authentication:** Using Spring Security & JWT.
+* **Role-Based Access Control (RBAC):** Distinct access levels for `ADMIN` and `USER`.
+  
 **Authentication Flow:**
 
 ![Authentication Flow](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/JwtWrokFlow.svg)
@@ -56,6 +56,10 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
   * **Payment Integration:** Integrated Payment Gateway simulation to handle secure financial transactions.
   * **Validation:** Strict input validation using `@Valid` and **Custom Annotations** to ensure business logic integrity.
 
+### ✅ Validation & Error Handling
+* **Robust Validation:** utilized **Jakarta Validation (`@Valid`)** alongside **Custom Annotations** to enforce strict business rules (e.g., password complexity, unique emails).
+* **Global Exception Handler:** A centralized `@ControllerAdvice` component that intercepts exceptions (like `MethodArgumentNotValidException` or custom `ResourceNotFoundException`) and returns standardized, user-friendly JSON error responses.
+  
 -----
 
 ## 🛠️ Tech Stack
