@@ -14,9 +14,9 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${spring.webSiteUrlProd}")
+    @Value("${spring.webSiteUrlProd:https://store-api-production-fc3d.up.railway.app}")
     private String prodUrl;
-    @Value("${spring.webSiteUrlDev}")
+    @Value("${spring.webSiteUrlDiv:http://localhost:8080}")
     private String devUrl;
 
     @Bean
@@ -29,7 +29,7 @@ public class OpenApiConfig {
         prodServer.setUrl(prodUrl);
         prodServer.setDescription("Production");
 
-        final String securitySchemeName = "bearerAuth";
+        String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .servers(List.of(devServer, prodServer))
