@@ -29,7 +29,7 @@ public class OpenApiConfig {
         prodServer.setUrl(prodUrl);
         prodServer.setDescription("Production");
 
-        String securitySchemeName = "bearerAuth";
+        final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .servers(List.of(devServer, prodServer))
