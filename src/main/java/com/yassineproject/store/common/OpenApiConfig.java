@@ -16,13 +16,13 @@ public class OpenApiConfig {
 
     @Value("${spring.webSiteUrlProd}")
     private String prodUrl;
-    @Value("${spring.webSiteUrlDiv}")
-    private String divUrl;
+    @Value("${spring.webSiteUrlDev}")
+    private String devUrl;
 
     @Bean
     public OpenAPI myOpenAPI() {
         Server devServer = new Server();
-        devServer.setUrl(divUrl);
+        devServer.setUrl(devUrl);
         devServer.setDescription("Development");
 
         Server prodServer = new Server();

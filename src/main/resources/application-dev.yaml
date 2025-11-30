@@ -10,4 +10,4 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
-  webSiteUrlDiv: "http://localhost:8080"
+  webSiteUrlDev: "http://localhost:8080"
