@@ -109,7 +109,46 @@ http://localhost:8080/swagger-ui.html
     ```bash
     mvn spring-boot:run
     ```
+----
+## 🎮 Live Demo & How to Test
 
+The API is deployed and accessible via Swagger UI. You can test endpoints directly without installing anything.
+
+**🔗 Live URL:** [https://store-api-production-fc3d.up.railway.app/swagger-ui/index.html](https://store-api-production-fc3d.up.railway.app/swagger-ui/index.html)
+
+### 🔐 How to Authenticate (Step-by-Step)
+
+Most endpoints (like creating products or placing orders) are secured. Follow these steps to access them:
+
+1.  **Login:**
+    * Go to the `Auth-Controller` section.
+    * Open `POST /api/v1/auth/login`.
+    * Click **Try it out**.
+    * Use these demo credentials (or register a new user):
+        ```json
+        {
+          "email": "yassine@example.com",  // Or your created user
+          "password": "45454545"      // Or your password
+        }
+        ```
+    * Click **Execute**.
+
+2.  **Copy Token:**
+    * In the response body, copy the `access_token` string (without quotes).
+
+3.  **Authorize:**
+    * Scroll to the top of the page and click the **Authorize 🔓** button.
+    * Paste the token in the value box.
+    * Click **Authorize** then **Close**.
+
+4.  **Test Secure Endpoints:**
+    * Now the lock icon 🔒 is closed. You can test any secured endpoint (e.g., `POST /products` or `GET /orders`).
+
+### 🧪 Test Credentials
+| Role | Email | Password | Access |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `yassine45@example.com` | `45454545` | Full Access (Manage Products, Users) |
+| **User** | `user@example.com` | `45454545` | Shop, Cart, Place Orders,show Products |
 -----
 
 ## 📬 Contact
