@@ -19,29 +19,7 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
 
 **Authentication Flow:**
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Filter as JwtAuthFilter
-    participant Controller as AuthController
-    participant Service as UserService
-    participant DB as MySQL Database
-
-    User->>Controller: POST /api/auth/login (username, password)
-    Controller->>Service: authenticate(username, password)
-    Service->>DB: findByUsername()
-    DB-->>Service: UserDetails
-    Service-->>Controller: Return User & Generate JWT
-    Controller-->>User: HTTP 200 OK (Access Token)
-
-    Note over User, Filter: Subsequent Requests
-    User->>Filter: GET /api/orders (Header: Bearer Token)
-    Filter->>Filter: validateToken()
-    Filter->>Controller: Forward Request (SecurityContext Set)
-    Controller->>DB: Fetch Data
-    DB-->>Controller: Order Data
-    Controller-->>User: HTTP 200 OK (JSON)
-````
+[Authentication Flow](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/JwtWrokFlow.svg)
 
 ### 🏗️ Architecture & Design
 
@@ -70,86 +48,8 @@ sequenceDiagram
 
 **Database Schema:**
 
-```mermaid
-erDiagram
-    USERS ||--|| PROFILES : "has details"
-    USERS ||--|{ ADDRESSES : "lives at"
-    USERS ||--|{ ORDERS : "places"
-    USERS ||--|{ WISHLIST : "favorites"
+[Database Schema](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/DatabaseSchema.svg)
 
-    USERS {
-        bigint id PK
-        string username
-        string email
-        string role
-        string password
-    }
-
-    PROFILES {
-        bigint id PK,FK
-        string bio
-        string phone_number
-        date date_of_birth
-        int loyalty_points
-    }
-
-    ADDRESSES {
-        bigint id PK
-        string street
-        string city
-        string state
-        string zip
-        bigint user_id FK
-    }
-
-    CATEGORIES ||--|{ PRODUCTS : "classifies"
-    CATEGORIES {
-        tinyint id PK
-        string name
-    }
-
-    PRODUCTS ||--|{ CART_ITEMS : "in cart"
-    PRODUCTS ||--|{ ORDER_ITEMS : "purchased"
-    PRODUCTS ||--|{ WISHLIST : "wished for"
-    PRODUCTS {
-        bigint id PK
-        string name
-        decimal price
-        longtext description
-        tinyint category_id FK
-    }
-
-    CART ||--|{ CART_ITEMS : "contains"
-    CART {
-        uuid id PK
-        date dateCreated
-    }
-
-    CART_ITEMS {
-        bigint id PK
-        uuid cart_id FK
-        bigint product_id FK
-        int quantity
-    }
-
-    ORDERS ||--|{ ORDER_ITEMS : "includes"
-    ORDERS {
-        bigint id PK
-        bigint customer_id FK
-        datetime created_at
-        decimal total_price
-        string status
-    }
-
-    ORDER_ITEMS {
-        bigint id PK
-        bigint order_id FK
-        bigint product_id FK
-        decimal unit_price
-        decimal total_price
-        int quantity
-    }
-```
 
 ### 💰 Transactions
 
