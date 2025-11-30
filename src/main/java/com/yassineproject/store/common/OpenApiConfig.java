@@ -14,13 +14,15 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${railway.app.url}")
+    @Value("${spring.webSiteUrlProd}")
     private String prodUrl;
+    @Value("${spring.webSiteUrlDiv}")
+    private String divUrl;
 
     @Bean
     public OpenAPI myOpenAPI() {
         Server devServer = new Server();
-        devServer.setUrl("http://localhost:8080");
+        devServer.setUrl(divUrl);
         devServer.setDescription("Development");
 
         Server prodServer = new Server();

@@ -10,4 +10,4 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
-  webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
+  webSiteUrlDiv: "http://localhost:8080"

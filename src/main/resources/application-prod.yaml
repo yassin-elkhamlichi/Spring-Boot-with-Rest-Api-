@@ -4,4 +4,4 @@ spring:
     username: ${USER_NAME}
     password: ${PASSWORD}
 
-  webSiteUrl: https://mystore.com
+  webSiteUrlProd: "https://store-api-production-fc3d.up.railway.app"
