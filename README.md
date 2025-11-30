@@ -61,11 +61,12 @@ sequenceDiagram
   * **DTO Pattern:** Strict separation between Database Entities and API responses using **MapStruct** for high-performance, type-safe mapping.
   * **Global Exception Handling:** Centralized `@ControllerAdvice` to capture runtime errors and return standardized, user-friendly JSON responses.
 
-### 💾 Data & Persistence
+### 💾 Data & Persistence & Performance
 
-  * **Complex Relationships:** Optimized handling of `@ManyToMany` (Products ↔ Orders) and `@OneToMany` relationships.
-  * **Performance:** Implemented **Pagination and Sorting** for product catalogs to handle large datasets efficiently.
-  * **Data Integrity:** Custom **JPQL Queries** and **Specifications** for advanced filtering.
+* **Database Version Control:** Integrated **Flyway** to manage database schema changes and versioning, ensuring consistency across environments.
+* **Performance Optimization:** solved the **N+1 Select Problem** using **Spring Data JPA @EntityGraph** to optimize fetching strategies (Eager vs Lazy) dynamically.
+* **Complex Relationships:** Optimized handling of `@ManyToMany` and `@OneToMany` associations.
+* **Data Integrity:** Custom **JPQL Queries** and **Specifications** for advanced filtering.
 
 **Database Schema:**
 
@@ -159,13 +160,14 @@ erDiagram
 
 ## 🛠️ Tech Stack
 
-  * **Core:** Java 17, Spring Boot 3.x
-  * **Database:** MySQL, Spring Data JPA (Hibernate)
-  * **Security:** Spring Security, JWT
-  * **Mapping:** MapStruct
-  * **Documentation:** Swagger UI (OpenAPI 3.0)
-  * **Testing:** Postman (Automation & Collections), JUnit 5
-  * **Build Tool:** Maven
+* **Core:** Java 17, Spring Boot 3.x
+* **Database:** MySQL, Spring Data JPA (Hibernate)
+* **Migrations:** Flyway
+* **Security:** Spring Security, JWT
+* **Mapping:** MapStruct
+* **Documentation:** Swagger UI (OpenAPI 3.0)
+* **Testing:** Postman (Automation & Collections)
+* **Build Tool:** Maven
 
 -----
 
