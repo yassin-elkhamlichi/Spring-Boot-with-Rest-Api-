@@ -14,4 +14,5 @@ public class SwaggerSecurityRules implements SecurityRules{
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll();
     }
+
 }
