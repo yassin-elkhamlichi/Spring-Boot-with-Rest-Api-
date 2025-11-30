@@ -32,7 +32,7 @@ public class OpenApiConfig {
         String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-                .servers(List.of(devServer, prodServer))
+                .servers(List.of(prodServer,devServer))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
