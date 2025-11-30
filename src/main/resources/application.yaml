@@ -26,3 +26,5 @@ spring:
     webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
 
   webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
+server:
+  forward-headers-strategy: framework
