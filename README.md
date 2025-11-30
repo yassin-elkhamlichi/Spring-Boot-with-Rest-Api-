@@ -19,7 +19,7 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
 
 **Authentication Flow:**
 
-[Authentication Flow](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/JwtWrokFlow.svg)
+![Authentication Flow](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/JwtWrokFlow.svg)
 
 ### 🏗️ Architecture & Design
 
@@ -48,7 +48,7 @@ It manages the complete shopping lifecycle: **User Registration → Product Disc
 
 **Database Schema:**
 
-[Database Schema](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/DatabaseSchema.svg)
+![Database Schema](https://github.com/yassin-elkhamlichi/Spring-Boot-with-Rest-Api-/blob/main/DatabaseSchema.svg)
 
 
 ### 💰 Transactions
