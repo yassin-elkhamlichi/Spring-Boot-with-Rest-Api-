@@ -115,13 +115,10 @@ http://localhost:8080/swagger-ui.html
 The API is deployed and accessible via Swagger UI. You can test endpoints directly without installing anything.
 
 **🔗 Live URL:** [https://store-api-production-fc3d.up.railway.app/swagger-ui/index.html](https://store-api-production-fc3d.up.railway.app/swagger-ui/index.html)
-<<<<<<< HEAD
-> **⚠️ Note regarding Live Demo:** > The application is hosted on a free cloud tier (Railway).
-=======
 > **⚠️ Note regarding Live Demo:** > The application is hosted on a free cloud tier (Railway). 
->>>>>>> d87388941429bc9c5298d4819f6aafd2ed8c3a80
 > 1. The initial request might take **30-60 seconds** to wake up the server (Cold Start).
 > 2. If the link is inaccessible, the free trial credits may have expired.
+
 ### 🔐 How to Authenticate (Step-by-Step)
 
 Most endpoints (like creating products or placing orders) are secured. Follow these steps to access them:
