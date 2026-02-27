@@ -2,11 +2,6 @@ spring:
   application:
     name: store
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/store_api?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${USER_NAME}
-    password: ${PASSWORD}
-
   jpa:
     show-sql: true
     hibernate:
@@ -25,6 +20,5 @@ spring:
     secretKey: ${STRIPE_SECRET_KEY}
     webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
 
-  webSiteUrl: "https://dorthey-unlosable-irrecoverably.ngrok-free.dev/:8080"
 server:
   forward-headers-strategy: framework
